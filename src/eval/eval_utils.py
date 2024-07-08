@@ -58,7 +58,7 @@ def perform_eval_with_merged_vector(args, task_vector, eval_masks=None):
         )
     else:
         test_metrics = evaluate_task_vector_at_coef(
-            task_vector, pretrained_checkpoint, args, float(optimal_coef), eval_masks=None
+            task_vector, pretrained_checkpoint, args, float(optimal_coef), eval_masks=None, test=True
         )
 
     print("=" * 100)

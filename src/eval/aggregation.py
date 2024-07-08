@@ -95,7 +95,7 @@ def create_task_vector(config: DictConfig) -> Tuple[torch.Tensor, Optional[Dict[
 
     if config.method.name == "ties":
         # TIES Merging
-        merge_func = "dis-mean"
+        merge_func = f"dis-{config.method.agg}"
         merged_tv = ties_merging(tv_flat_checks, reset_thresh=config.method.k, merge_func=merge_func)
     elif config.method.name in ["sum", "zeroshot", "average"]:
         # "sum" corresponds to Task Arithmetic (TA)

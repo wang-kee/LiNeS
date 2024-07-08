@@ -1,3 +1,69 @@
+# Updated README
+
+This is a repo based on TALL Masks, with extra features related to layer-wise scaling.
+
+To play around with it, you could run the following:
+
+## Evaluation
+
+##### Evaluate with baseline model merging methods:
+```bash
+# Evaluate with Task Arithmetic baseline
+python main.py model=ViT-B-32 method="sum" 
+
+# Evaluate with Task Arithmetic with block-wise increasing scaling
+python main.py model=ViT-B-32 method="sum" method.increasing_scaling=True 
+
+# Evaluate with Ties-merging with block-wise increasing scaling
+python main.py model=ViT-B-32 method="ties" method.k=20
+
+# Evaluate with Ties-merging
+python main.py model=ViT-B-32 method="ties" method.k=20 method.agg="sum" method.increasing_scaling=True 
+
+```
+
+For other experimental details please check the contents below.
+
+If the code does not run, you can also modify from your code by simply replacing:
+
+```python
+
+image_encoder = task_vector.apply_to(pretrained_checkpoint, scaling_coef=scaling_coef)
+
+```
+
+to:
+
+```python
+def linear_scaling(task_vector, scaling_coef, args):
+
+    """ The only change to Task Arithmetic """
+
+    scaled_task_vector = copy.deepcopy(task_vector)
+    num_datasets = len(args.DATASETS)
+
+    num_blocks = 12 if args.model != 'ViT-L-14' else 24
+    key_blocks = list(f".{i}." for i in range(0, num_blocks))
+
+    dic_linear_scaling = {}
+    for k in scaled_task_vector.vector.keys():
+        for l, block in enumerate(key_blocks):
+            if block in k:
+                dic_linear_scaling[k] = 1/num_datasets + scaling_coef / num_blocks * l
+
+    print(f"For alpha={scaling_coef}, the linear scaling coefficients are: {dic_linear_scaling}")
+
+    # for the layers before and after the residual blocks, we set them to 1/num_datasets
+    scaled_task_vector.vector = {k: scaled_task_vector.vector[k] * dic_linear_scaling[k] if k in dic_linear_scaling.keys() else scaled_task_vector.vector[k] * (1/num_datasets) for k in scaled_task_vector.vector.keys()}
+
+    return scaled_task_vector
+
+task_vector = linear_scaling(task_vector, scaling_coef, args)
+image_encoder = task_vector.apply_to(pretrained_checkpoint, scaling_coef=1.0)
+
+```
+
+
 # TALL Masks
 
 This is the source code to reproduce the experiments for "[Localizing Task Information for Improved Model Merging and Compression](https://arxiv.org/abs/2405.07813)" by Ke Wang*, Nikolaos Dimitriadis*, Guillermo Ortiz-Jimenez, Francois Fleuret, and Pascal Frossard.

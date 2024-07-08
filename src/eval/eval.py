@@ -11,7 +11,7 @@ from src.models.heads import get_classification_head
 from src.models.modeling import ImageClassifier
 from src.models.task_vectors import _Checkpoint, _TaskVector
 from src.utils import utils
-
+from src.eval.layer_scaling_utils import progressive_scaling
 
 def eval_single_dataset(image_encoder, dataset_name, args):
     start_time = time.time()
@@ -45,15 +45,47 @@ def eval_single_dataset(image_encoder, dataset_name, args):
 
     return metrics
 
+def linear_scaling(task_vector, scaling_coef, args):
 
-def evaluate(pretrained_checkpoint, task_vector, args, scaling_coef, eval_masks=None):
+    """ LOOK AT ME: The only change to Task Arithmetic """
+
+    scaled_task_vector = copy.deepcopy(task_vector)
+    num_datasets = len(args.DATASETS)
+
+    num_blocks = 12 if args.model != 'ViT-L-14' else 24
+    key_blocks = list(f".{i}." for i in range(0, num_blocks))
+
+    dic_linear_scaling = {}
+    for k in scaled_task_vector.vector.keys():
+        for l, block in enumerate(key_blocks):
+            if block in k:
+                dic_linear_scaling[k] = 1/num_datasets + scaling_coef / num_blocks * l
+
+    print(f"For alpha={scaling_coef}, the linear scaling coefficients are: {dic_linear_scaling}")
+
+    # for the layers before and after the residual blocks, we set them to 1/num_datasets
+    scaled_task_vector.vector = {k: scaled_task_vector.vector[k] * dic_linear_scaling[k] if k in dic_linear_scaling.keys() else scaled_task_vector.vector[k] * (1/num_datasets) for k in scaled_task_vector.vector.keys()}
+
+    return scaled_task_vector
+
+
+def evaluate(pretrained_checkpoint, task_vector, args, scaling_coef, eval_masks=None, test=False):
     per_dataset_results = {}
     eval_datasets = args.eval_datasets if args.control_dataset is None else args.eval_datasets + [args.control_dataset]
 
     if eval_masks != None:
         assert args.method.name in ["tall_mask", "mag_masking"]
     else:
-        image_encoder = task_vector.apply_to(pretrained_checkpoint, scaling_coef=scaling_coef)
+        if args.method.increasing_scaling:
+            # this part is the key difference to task arithmetic
+            task_vector = linear_scaling(task_vector, scaling_coef, args)
+            image_encoder = task_vector.apply_to(pretrained_checkpoint, scaling_coef=1.0)
+        elif args.method.progressive_scaling:
+            # not used for now
+            task_vector = progressive_scaling(task_vector, pretrained_checkpoint, args, test)
+            image_encoder = task_vector.apply_to(pretrained_checkpoint, scaling_coef=1.0)
+        else:
+            image_encoder = task_vector.apply_to(pretrained_checkpoint, scaling_coef=scaling_coef)
 
     for dataset_name in eval_datasets:
 
@@ -79,10 +111,11 @@ def evaluate_task_vector_at_coef(
     args,
     scaling_coef: float,
     eval_masks=None,
+    test=False
 ):
     start_time = time.time()
 
-    coef_info = evaluate(pretrained_checkpoint, task_vector, args, scaling_coef, eval_masks)
+    coef_info = evaluate(pretrained_checkpoint, task_vector, args, scaling_coef, eval_masks, test)
 
     coef_info = add_normalized_accuracy(coef_info, args)
     coef_info["avg_normalized_top1"] = np.mean(
@@ -98,6 +131,8 @@ def evaluate_task_vector(task_vector, pretrained_checkpoint, args, eval_masks=No
     info = {}
 
     if args.method.name == "tall_mask" or eval_masks is not None:
+        scaling_coef_range = [1.0]
+    elif args.method.progressive_scaling:
         scaling_coef_range = [1.0]
     elif args.method.name == "zeroshot":
         scaling_coef_range = [0.0]

@@ -142,7 +142,7 @@ class _TaskVector(abc.ABC):
                         f"Warning: key {key} is present in the pretrained state dict but not in the task vector"  # noqa: E501
                     )
                     continue
-                new_state_dict[key] = pretrained_state_dict[key] + scaling_coef * self.vector[key]
+                new_state_dict[key] = pretrained_state_dict[key].to(self.vector[key].device) + scaling_coef * self.vector[key]
         pretrained_model.load_state_dict(new_state_dict)
         return pretrained_model
 
