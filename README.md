@@ -14,10 +14,10 @@ python main.py model=ViT-B-32 method="sum"
 # Evaluate with Task Arithmetic with block-wise increasing scaling
 python main.py model=ViT-B-32 method="sum" method.increasing_scaling=True 
 
-# Evaluate with Ties-merging with block-wise increasing scaling
+# Evaluate with Ties-merging 
 python main.py model=ViT-B-32 method="ties" method.k=20
 
-# Evaluate with Ties-merging
+# Evaluate with Ties-merging with block-wise increasing scaling
 python main.py model=ViT-B-32 method="ties" method.k=20 method.agg="sum" method.increasing_scaling=True 
 
 ```
