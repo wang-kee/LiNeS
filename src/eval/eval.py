@@ -55,16 +55,32 @@ def linear_scaling(task_vector, scaling_coef, args):
     num_blocks = 12 if args.model != 'ViT-L-14' else 24
     key_blocks = list(f".{i}." for i in range(0, num_blocks))
 
+    # calculate starting point (a) for the linear scaling
+    # scale to the average of the task vectors
+    # a = args.norm_tvs_mean / args.norm_mtv * 0.5
+
+    # scale accoring to the norm of mtv and the sum of the norms of the tvs
+    a = (args.norm_summed_tvs / args.norm_mtv) * 1 / num_datasets
+
+    print(f"Starting point for linear scaling: {a}")
+
     dic_linear_scaling = {}
     for k in scaled_task_vector.vector.keys():
         for l, block in enumerate(key_blocks):
             if block in k:
-                dic_linear_scaling[k] = 1/num_datasets + scaling_coef / num_blocks * l
+                # dic_linear_scaling[k] = 1/num_datasets + scaling_coef / num_blocks * l
+                dic_linear_scaling[k] = a + scaling_coef / num_blocks * l
+                # dic_linear_scaling[k] = 0.5 + scaling_coef / num_blocks * l # TODO: remove me
+            # if "c_proj" in k: # TODO: remove me
+            #     dic_linear_scaling[k] = 1/num_datasets
 
-    print(f"For alpha={scaling_coef}, the linear scaling coefficients are: {dic_linear_scaling}")
+
+    # print(f"For alpha={scaling_coef}, the linear scaling coefficients are: {dic_linear_scaling}")
+    print(f"For alpha={scaling_coef}, the linear scaling coefficients are between {list(dic_linear_scaling.values())[0]} to {list(dic_linear_scaling.values())[-1]}")
 
     # for the layers before and after the residual blocks, we set them to 1/num_datasets
-    scaled_task_vector.vector = {k: scaled_task_vector.vector[k] * dic_linear_scaling[k] if k in dic_linear_scaling.keys() else scaled_task_vector.vector[k] * (1/num_datasets) for k in scaled_task_vector.vector.keys()}
+    # scaled_task_vector.vector = {k: scaled_task_vector.vector[k] * dic_linear_scaling[k] if k in dic_linear_scaling.keys() else scaled_task_vector.vector[k] * (1/num_datasets) for k in scaled_task_vector.vector.keys()}
+    scaled_task_vector.vector = {k: scaled_task_vector.vector[k] * dic_linear_scaling[k] if k in dic_linear_scaling.keys() else scaled_task_vector.vector[k] * a for k in scaled_task_vector.vector.keys()}
 
     return scaled_task_vector
 
@@ -143,6 +159,8 @@ def evaluate_task_vector(task_vector, pretrained_checkpoint, args, eval_masks=No
     else:
         scaling_coef_range = np.linspace(0.0, 1.0, args.n_eval_points // 2 + 1)[1:]
 
+    scaling_coef_range = np.arange(0.0, 1.6, 0.1)
+
     if args.method.name == "tall_mask":
         if args.method.load_mask:
             print("=" * 43, f"Evaluating the loaded TALL masks", "=" * 43)
@@ -169,6 +187,7 @@ def evaluate_task_vector(task_vector, pretrained_checkpoint, args, eval_masks=No
                     )
                 )
     else:
+        best_acc = 0.0
         for scaling_coef in scaling_coef_range:
             print("\n" * 2)
             print("=" * 43, f"alpha = {scaling_coef:.2f}", "=" * 43)
@@ -178,9 +197,14 @@ def evaluate_task_vector(task_vector, pretrained_checkpoint, args, eval_masks=No
             print(
                 "\t avg_normalized_top1: {}%\t avg_top1: {}%".format(
                     round(info[scaling_coef]["avg_normalized_top1"] * 100, 2),
-                    round(info[scaling_coef]["avg_top1"] * 100, 2),
+                    round(info[scaling_coef]["avg_top1"] * 100, 2), 
                 )
             )
+            # FIXME: this is a hack to save compuational time, assuming the accuracy is monotonically increasing
+            if info[scaling_coef]["avg_top1"] >= best_acc:
+                best_acc = info[scaling_coef]["avg_top1"]
+            else:
+                break
 
     return info
 

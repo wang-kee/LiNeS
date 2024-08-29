@@ -3,6 +3,7 @@ from typing import Dict, Optional, Tuple
 
 import torch
 from omegaconf import DictConfig
+from omegaconf import open_dict
 
 from src.models.task_vectors import ImageEncoder, NonLinearTaskVector
 from src.utils.tallmask_utils import construct_consensus_mask, construct_tall_mask, load_tall_mask
@@ -97,6 +98,10 @@ def create_task_vector(config: DictConfig) -> Tuple[torch.Tensor, Optional[Dict[
         # TIES Merging
         merge_func = f"dis-{config.method.agg}"
         merged_tv = ties_merging(tv_flat_checks, reset_thresh=config.method.k, merge_func=merge_func)
+
+        # torch.save(merged_tv, f"merged_tv_ties_{config.num_tasks}task.pt")
+        # torch.save(tv_flat_checks, f"tv_flat_checks_{config.num_tasks}task.pt")
+
     elif config.method.name in ["sum", "zeroshot", "average"]:
         # "sum" corresponds to Task Arithmetic (TA)
         # TA, zeroshot, weight average all construct the task vector with sum, but use different scaling factors.
@@ -143,6 +148,34 @@ def create_task_vector(config: DictConfig) -> Tuple[torch.Tensor, Optional[Dict[
         eval_masks = {key: value for key, value in zip(config.DATASETS, eval_masks)}
     else:
         raise ValueError(f"Method {config.method.name} not defined.")
+
+    # calculate the norm of the merged task vector
+
+    def calculate_norm(tv):
+        frozen_keys = ['model.positional_embedding', 'model.text_projection', 'model.logit_scale', 'model.token_embedding.weight', 'model.ln_final.weight', 'model.ln_final.bias']
+        dic = vector_to_state_dict(tv.flatten(), ptm_check, remove_keys=frozen_keys)
+        tv_removed = state_dict_to_vector(dic, remove_keys=frozen_keys)
+        return tv_removed.abs().sum()
+
+    norm_mtv = (merged_tv).abs().sum()
+    norm_tvs_mean = (tv_flat_checks).abs().sum() / len(tv_flat_checks)
+    norm_summed_tvs = (tv_flat_checks.sum(dim=0)).abs().sum()
+
+    # norm_mtv = calculate_norm(merged_tv)
+    # norm_tvs_mean = torch.stack(list(calculate_norm(single_tv) for single_tv in tv_flat_checks)).mean()  # / len(tv_flat_checks)
+    # norm_summed_tvs = calculate_norm(tv_flat_checks.sum(dim=0)).abs().sum()
+
+    print(f"-----------------") 
+    print(f"Norm of merged task vector: {norm_mtv}")
+    print(f"Norm of mean of task vectors: {norm_tvs_mean}")
+    print(f"Norm of sum of task vectors: {norm_summed_tvs}")
+    print(f"-----------------")
+
+
+    with open_dict(config):
+        config.norm_mtv = norm_mtv.item()
+        config.norm_tvs_mean = norm_tvs_mean.item()
+        config.norm_summed_tvs = norm_summed_tvs.item()
 
     merged_tv_state_dict = vector_to_state_dict(merged_tv, ptm_check, remove_keys=remove_keys)
 
