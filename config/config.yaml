@@ -17,8 +17,10 @@ port: 12355
 n_eval_points: 21
 device: "cuda"
 batch_size: 128
-data_location: "~data"
-model_location: "models/checkpoints"
+data_location: "/home/ahazimeh/data"
+# data_location: "/home/kewang/data/"
+model_location: "/home/kewang/mount/checkpoints/"
+prog_avg_coeff: 0.5
 
 wandb:
   project: task-vectors
