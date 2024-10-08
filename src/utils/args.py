@@ -54,8 +54,8 @@ def parse_arguments():
         help="Number of evaluation points used to find optimal coefficient in task arithmetic.",
     )
     parser.add_argument("--finetuning-mode", type=str, default="standard", help="Finetuned mode; standard for nonlinear finetune; none for zeroshot")
-    parser.add_argument("--model-location", type=str, default="/home/kewang/mount/checkpoints", help="Directory for model location")
-    parser.add_argument("--data-location", type=str, default="/home/gortiz/data", help="Directory for data location")
+    parser.add_argument("--model-location", type=str, default="/mnt/lts4/scratch/checkpoints/tall_mask_checkpoints/mount/model_checkpoints", help="Directory for model location")
+    parser.add_argument("--data-location", type=str, default="/mnt/lts4/scratch/data", help="Directory for data location")
 
     parsed_args = parser.parse_args()
     parsed_args.device = "cuda" if torch.cuda.is_available() else "cpu"

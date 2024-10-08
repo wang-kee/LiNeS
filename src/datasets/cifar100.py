@@ -11,6 +11,7 @@ class CIFAR100:
         batch_size=128,
         num_workers=16,
     ):
+        location = "home/kewang/data"
 
         self.train_dataset = PyTorchCIFAR100(root=location, download=True, train=True, transform=preprocess)
 

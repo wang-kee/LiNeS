@@ -167,6 +167,28 @@ def find_optimal_coef(
                 best_coef = scaling_coef
     return best_coef
 
+def find_optimal_coef_id_ood(
+    results: Dict[str, Any],
+    id_weight: float = 5.0,
+    minimize: bool = False,
+    control_metric: Optional[str] = None,
+    control_metric_threshold: float = 0.0,
+) -> float:
+    best_coef = None
+    if minimize:
+        best_metric = 1
+    else:
+        best_metric = 0
+    for scaling_coef in results.keys():
+        if minimize:
+            if (id_weight * results[scaling_coef]["id_normalized_accuracy"] + results[scaling_coef]["ood_normalized_accuracy"]) < best_metric:
+                best_metric = id_weight * results[scaling_coef]["id_normalized_accuracy"] + results[scaling_coef]["ood_normalized_accuracy"]
+                best_coef = scaling_coef
+        else:
+            if (id_weight * results[scaling_coef]["id_normalized_accuracy"] + results[scaling_coef]["ood_normalized_accuracy"]) > best_metric:
+                best_metric = id_weight * results[scaling_coef]["id_normalized_accuracy"] + results[scaling_coef]["ood_normalized_accuracy"]
+                best_coef = scaling_coef
+    return best_coef
 
 def nonlinear_advantage(nonlinear_acc, linear_acc, num_classes):
     """Computes the normalized non-linear advantage of a finetuned model.

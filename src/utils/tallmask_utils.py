@@ -148,7 +148,7 @@ def find_optimal_mask(val_metrics, eval_masks, args, save_masks=True):
     if save_masks and not args.method.load_mask:
         # convert to numpy to save with np.packbits for saving storage
         best_masks_for_test_vector = {k: np.packbits(v) for k, v in best_masks_for_test_vector.items()}
-        mask_save_dir = args.model_location.replace("checkpoints", "tall_masks")
+        mask_save_dir = args.model_location.replace("model_checkpoints", "tall_masks")
         mask_name = (
             f"TALL_mask_{args.num_tasks}task.npy"
             if not args.method.use_ties
@@ -162,20 +162,23 @@ def find_optimal_mask(val_metrics, eval_masks, args, save_masks=True):
 
 def load_tall_mask(remove_keys, ptm_check, config):
     """Loads TALL masks from disk, unpack and transform to state dictionaries."""
-    mask_location = config.model_location.replace("checkpoints", "tall_masks")
+    mask_location = config.model_location.replace("model_checkpoints", "tall_masks")
+    print(f"Loading TALL masks from {mask_location}")
     try:
         if config.method.use_ties:
             print("==== Loading TALL Masks built with TIES ====")
-            tall_masks = torch.load(
+            tall_masks = np.load(
                 os.path.join(
                     mask_location,
                     config.model,
                     f"TALL_mask_{config.num_tasks}task_use_ties.npy",
-                )
-            )
+                ),
+                allow_pickle=True
+            ).item()
         else:
             print("==== Loading TALL Masks built with Task Arithmetic ====")
-            tall_masks = torch.load(os.path.join(mask_location, config.model, f"TALL_mask_{config.num_tasks}task.npy"))
+            tall_masks = np.load(os.path.join(mask_location, config.model, f"TALL_mask_{config.num_tasks}task.npy"), allow_pickle=True).item()
+            # tall_masks = torch.load(os.path.join(mask_location, config.model, f"TALL_mask_{config.num_tasks}task.npy"))
     except:
         raise Exception("TALL Masks are not constructed yet.")
 
@@ -219,6 +222,9 @@ def construct_consensus_mask(ptm_check, prun_thre_k, config, remove_keys=[]):
             consensus_mask[key] = consensus_mask[key] + mask[key].float()
         # filter out the least-activated parameters based on given threshold
         consensus_mask[key] = consensus_mask[key].float() >= prun_thre_k
+
+    torch.save(consensus_mask, f"consensus_mask_{config.num_tasks}task_107.pt")
+
     consensus_mask_vector = state_dict_to_vector(consensus_mask, remove_keys=remove_keys)
 
     return consensus_mask_vector

@@ -7,9 +7,9 @@ from omegaconf import open_dict
 
 from src.eval.eval import evaluate_task_vector, evaluate_task_vector_at_coef
 from src.utils.tallmask_utils import find_optimal_mask
-from src.utils.utils import find_optimal_coef
+from src.utils.utils import find_optimal_coef, find_optimal_coef_id_ood
 from src.utils.logging import log_results
-from src.utils.variables_and_paths import get_finetuned_path, get_zeroshot_path, get_single_task_accuracies_path
+from src.utils.variables_and_paths import get_finetuned_path, get_zeroshot_path, get_single_task_accuracies_path, get_zero_shot_accuracies_path
 
 
 def perform_eval_with_merged_vector(args, task_vector, eval_masks=None):
@@ -20,11 +20,14 @@ def perform_eval_with_merged_vector(args, task_vector, eval_masks=None):
         args.save_dir = os.path.join(args.model_location, args.model)
 
     ft_accuracies_path = get_single_task_accuracies_path(args.model)
+    zs_accuracies_path = get_zero_shot_accuracies_path(args.model)
     pretrained_checkpoint = get_zeroshot_path(args.model_location, "MNIST", args.model)
 
     with open_dict(args):
         with open(ft_accuracies_path) as f:
             args.finetuning_accuracies = json.load(f)
+        with open(zs_accuracies_path) as f:
+            args.zeroshot_accuracies = json.load(f)['val_best']
         args.eval_datasets = args.DATASETS_VAL
         args.control_dataset = None
 
@@ -41,6 +44,12 @@ def perform_eval_with_merged_vector(args, task_vector, eval_masks=None):
     elif args.method.name == "mag_masking":
         best_masks_for_test = eval_masks
         best_val_metrics = val_metrics[1.0]
+    elif args.method.name == "single_task":
+        # find scaling factor alpha based on validation accuracy (for Task Arithmetic, TIES, Consensus Merging)
+        # optimal_coef = find_optimal_coef_id_ood(val_metrics, id_weight=10.0, minimize=False)
+        # optimal_coef = find_optimal_coef_id_ood(val_metrics, id_weight=5.0, minimize=False)
+        optimal_coef = find_optimal_coef_id_ood(val_metrics, id_weight=1.0, minimize=False)
+        best_val_metrics = val_metrics[optimal_coef]
     else:
         # find scaling factor alpha based on validation accuracy (for Task Arithmetic, TIES, Consensus Merging)
         optimal_coef = find_optimal_coef(val_metrics, metric="avg_normalized_top1", minimize=False)
@@ -67,5 +76,8 @@ def perform_eval_with_merged_vector(args, task_vector, eval_masks=None):
     final_results = {"test": test_metrics, "val": val_metrics, "val_best": best_val_metrics}
 
     log_results(final_results, args)
+
+    wandb.log({"test_acc": test_metrics['avg_top1']})
+    wandb.log({"test_norm_acc": test_metrics['avg_normalized_top1']})
 
     return final_results

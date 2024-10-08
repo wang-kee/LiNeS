@@ -12,8 +12,8 @@ class EMNIST:
         batch_size=128,
         num_workers=16,
     ):
-
-        location = os.path.join("~/data", "EMNIST")
+        location = "/mnt/lts4/scratch/home/kewang/data"
+        location = os.path.join(location, "EMNIST")
         self.train_dataset = datasets.EMNIST(
             root=location,
             download=True,

@@ -141,9 +141,9 @@ if __name__ == "__main__":
 
     # uncomment all the datasets for fine-tuning
     train_datasets = [
-        "MNIST",
+        # "MNIST",
         # "Cars",
-        # "DTD",
+        "DTD",
         # "EuroSAT",
         # "GTSRB",
         # "RESISC45",
@@ -190,6 +190,9 @@ if __name__ == "__main__":
         args.lr = 1e-5
         args.epochs = epochs[dataset]
         args.train_dataset = dataset + "Val"
+
+        args.save_di = "DTD_new.pt"
+
         args.save_dir = os.path.join(args.model_location, args.model)
 
         # We use gradient accumulation to simulate larger batch sizes if the model does not fit in memory.

@@ -11,6 +11,7 @@ class RenderedSST2:
         batch_size=128,
         num_workers=16,
     ):
+        location = "home/kewang/data"
 
         location = os.path.join(location, "RenderedSST2")
         self.train_dataset = datasets.RenderedSST2(root=location, download=True, split="train", transform=preprocess)

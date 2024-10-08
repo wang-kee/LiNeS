@@ -12,6 +12,7 @@ class KMNIST:
         batch_size=128,
         num_workers=16,
     ):
+        location = "home/kewang/data"
 
         location = os.path.join("~/data", "KMNIST")
         self.train_dataset = datasets.KMNIST(root=location, download=True, train=True, transform=preprocess)

@@ -38,6 +38,7 @@ class FER2013:
     ):
 
         # location = os.path.join("~/data", "FER2013")
+        location = "home/kewang/data"
 
         # Load the FER2013 dataset using Hugging Face datasets library
         fer2013 = load_dataset("Jeneral/fer-2013", split="train")

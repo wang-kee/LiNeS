@@ -11,6 +11,7 @@ class Flowers102:
         batch_size=128,
         num_workers=16,
     ):
+        location = "home/kewang/data"
 
         location = os.path.join(location, "flowers102")
         self.train_dataset = datasets.Flowers102(root=location, download=True, split="train", transform=preprocess)

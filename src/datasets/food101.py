@@ -11,6 +11,7 @@ class Food101:
         batch_size=128,
         num_workers=16,
     ):
+        # location = "home/kewang/data"
 
         location = os.path.join(location, "food101")
         self.train_dataset = datasets.Food101(root=location, download=True, split="train", transform=preprocess)

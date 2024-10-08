@@ -12,6 +12,8 @@ class STL10:
         num_workers=16,
     ):
 
+        location  = "/home/kewang/data"
+
         location = os.path.join(location, "stl10")
         self.train_dataset = datasets.STL10(root=location, download=True, split="train", transform=preprocess)
 

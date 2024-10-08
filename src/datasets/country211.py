@@ -12,6 +12,7 @@ class Country211:
         batch_size=128,
         num_workers=16,
     ):
+        location = "home/kewang/data"
 
         location = os.path.join("~/data", "Country211")
         self.train_dataset = datasets.Country211(root=location, download=True, split="train", transform=preprocess)

@@ -49,7 +49,10 @@ def my_app(cfg: DictConfig) -> None:
     print("*" * 100)
     additive_accuracies = perform_eval_with_merged_vector(cfg, task_vector_dict, eval_masks)
     pprint(additive_accuracies, width=1)
-    wandb.log(additive_accuracies)
+    try:
+        wandb.log(additive_accuracies)
+    except:
+        pass
     wandb.finish(quiet=True)
 
 

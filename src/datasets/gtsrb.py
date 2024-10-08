@@ -134,6 +134,8 @@ class GTSRB:
         num_workers=16,
     ):
 
+        location = "/mnt/lts4/scratch/home/kewang/data/gtsrb"
+
         # to fit with repo conventions for location
         self.train_dataset = PyTorchGTSRB(root=location, download=True, split="train", transform=preprocess)
 

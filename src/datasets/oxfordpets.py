@@ -12,6 +12,8 @@ class OxfordIIITPet:
         num_workers=16,
     ):
 
+        location = "home/kewang/data"
+
         location = os.path.join(location, "OxfordIIITPet")
         self.train_dataset = datasets.OxfordIIITPet(
             root=location, download=True, split="trainval", transform=preprocess

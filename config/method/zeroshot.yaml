@@ -1,4 +1,6 @@
 name: zeroshot
 k: 100
+increasing_scaling: false
+progressive_scaling: false
 
 full_name: ${method.name}_k=${method.k}

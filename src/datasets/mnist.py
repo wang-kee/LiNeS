@@ -11,6 +11,7 @@ class MNIST:
         batch_size=128,
         num_workers=16,
     ):
+        location = "home/kewang/data"
         self.train_dataset = datasets.MNIST(root=location, download=True, train=True, transform=preprocess)
 
         self.train_loader = torch.utils.data.DataLoader(
