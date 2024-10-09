@@ -82,7 +82,7 @@ def LiNeS_scaling(task_vector, alpha, beta, num_blocks):
     
     # for the layers outside the residual blocks, we set them to 1/num_datasets
     scaled_task_vector.vector = {
-        # Use alpha if layer is outside residual blocks
+        # scale with alpha for layers outside residual blocks
         k: scaled_task_vector.vector[k] * layer_scalings_dict.get(k, alpha)  
         for k in scaled_task_vector.vector.keys()
     }

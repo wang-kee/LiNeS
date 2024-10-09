@@ -106,7 +106,8 @@ def create_task_vector(config: DictConfig) -> Tuple[torch.Tensor, Optional[Dict[
     elif config.method.name == "single_task":
         # load the single task vector from task_index
         tv_flat_checks, _ = topk_values_mask(tv_flat_checks, K=config.method.k, return_mask=False)
-        merged_tv = tv_flat_checks[config.method.task_index] # take the single task vector of the task_index-th task
+        # take only the task vector of the task_index-th task
+        merged_tv = tv_flat_checks[config.method.task_index] 
     elif config.method.name == "tall_mask":
         # construct multi-task vector
         if config.method.use_ties:
@@ -149,18 +150,12 @@ def create_task_vector(config: DictConfig) -> Tuple[torch.Tensor, Optional[Dict[
     else:
         raise ValueError(f"Method {config.method.name} not defined.")
 
-    norm_mtv = (merged_tv).abs().sum()
-    norm_summed_tvs = (tv_flat_checks.sum(dim=0)).abs().sum()
-
-    print(f"L1 Norm of merged task vector: {norm_mtv}")
-    print(f"L1 Norm of sum of task vectors: {norm_summed_tvs}")
-
+    # compute the l1 norm of the multi-task vector
     with open_dict(config):
-        config.norm_mtv = norm_mtv.item()
-        config.norm_summed_tvs = norm_summed_tvs.item()
+        config.norm_mtv = (merged_tv).abs().sum().item()
+        config.norm_summed_tvs = (tv_flat_checks.sum(dim=0)).abs().sum().item()
 
     merged_tv_state_dict = vector_to_state_dict(merged_tv, ptm_check, remove_keys=remove_keys)
-
     task_vector = NonLinearTaskVector(model_name=config.model, vector=merged_tv_state_dict)
 
     if config.method.name not in ["tall_mask", "mag_masking"]:

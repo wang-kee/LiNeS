@@ -45,7 +45,8 @@ def perform_eval_with_merged_vector(args, task_vector, eval_masks=None):
         best_masks_for_test = eval_masks
         best_val_metrics = val_metrics[1.0]
     elif args.method.name == "single_task":
-        # for single-task setting, find best hyper-parameter based on validation accuracy on both target and control tasks
+        # for single-task setting, find best hyper-parameter based on a trade-off accuracy on both target and control tasks
+        # here id_weight is the weight for the target tasks in the trade-off
         optimal_coef = find_optimal_coef_id_ood(val_metrics, id_weight=2.0, minimize=False)
         best_val_metrics = val_metrics[optimal_coef]
     else:
