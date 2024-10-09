@@ -47,12 +47,9 @@ def my_app(cfg: DictConfig) -> None:
     print("*" * 100)
     print("*" * 39, "Starting Evaluation.", "*" * 39)
     print("*" * 100)
-    additive_accuracies = perform_eval_with_merged_vector(cfg, task_vector_dict, eval_masks)
-    pprint(additive_accuracies, width=1)
-    try:
-        wandb.log(additive_accuracies)
-    except:
-        pass
+    eval_results = perform_eval_with_merged_vector(cfg, task_vector_dict, eval_masks)
+    pprint(eval_results, width=1)
+    wandb.log(eval_results)
     wandb.finish(quiet=True)
 
 

@@ -41,7 +41,7 @@ Alternatively, you can run the following scripts:
 
 ```bash
 # Evaluate the performance of the pre-trained model on the first 8 tasks
-python main.py model=ViT-B-32 num_tasks=8 method="zero-shot"
+python main.py model=ViT-B-32 num_tasks=8 method="zeroshot"
 
 # Evaluate the performance of fine-tuned model on the first 8 tasks; task_index=0 indicates fine-tuned on the 0-th task
 python main.py model=ViT-B-32 num_tasks=8 method="single_task" method.task_index=0

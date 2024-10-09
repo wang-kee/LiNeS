@@ -69,13 +69,17 @@ def perform_eval_with_merged_vector(args, task_vector, eval_masks=None):
         )
 
     print("=" * 100)
-    print(f"Test normalized accuracy: {test_metrics['avg_normalized_top1']}")
-    print(f"Test absolute accuracy: {test_metrics['avg_top1']}")
+
+    if args.method.name == "single_task":
+        print(f"Test target task accuracy: {test_metrics['target_accuracy']:.4f}")
+        print(f"Test target task normalized accuracy: {test_metrics['target_normalized_accuracy']:.4f}")
+        print(f"Test control task accuracy: {test_metrics['control_accuracy']:.4f}")
+        print(f"Test control task normalized accuracy: {test_metrics['control_normalized_accuracy']:.4f}")
+    else:
+        print(f"Test normalized accuracy: {test_metrics['avg_normalized_top1']:.4f}")
+        print(f"Test absolute accuracy: {test_metrics['avg_top1']:.4f}")
+
     final_results = {"test": test_metrics, "val": val_metrics, "val_best": best_val_metrics}
-
     log_results(final_results, args)
-
-    wandb.log({"test_acc": test_metrics['avg_top1']})
-    wandb.log({"test_norm_acc": test_metrics['avg_normalized_top1']})
 
     return final_results

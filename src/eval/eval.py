@@ -47,8 +47,26 @@ def eval_single_dataset(image_encoder, dataset_name, args):
     return metrics
 
 def LiNeS_scaling(task_vector, alpha, beta, num_blocks):
-    
-    """ LOOK AT ME: The only change to Task Arithmetic """
+    """
+    LiNeS: Progressively scales the task vector based on layer depth.
+
+    Parameters:
+    -----------
+    task_vector : dict
+        A dictionary representing the residual between the fine-tuned checkpoint 
+        and the pre-trained checkpoint. 
+    alpha : float
+         The minimum scaling factor for the blocks.
+    beta : float
+        The maximum scaling coefficient difference between the last and first block.
+    num_blocks : int
+        The total number of layer blocks in the model. 
+    Returns:
+    --------
+    scaled_task_vector : dict
+        A copy of `task_vector` where each key is scaled based on the layer depth.
+    """
+
     scaled_task_vector = copy.deepcopy(task_vector)
     
     key_blocks = list(f".{i}." for i in range(0, num_blocks))
@@ -130,30 +148,10 @@ def evaluate_task_vector_at_coef(
 
     if args.method.name == "single_task":
         coef_info = add_normalized_accuracy(coef_info, args, based_on="zeroshot")
-        target_accuracy = coef_info[args.eval_datasets[args.method.task_index] + ":top1"]
-        target_normalized_accuracy = coef_info[args.eval_datasets[args.method.task_index] + ":normalized_top1"]
-        control_accuracy = np.mean([coef_info[dataset + ":top1"] for dataset in args.eval_datasets if dataset != args.eval_datasets[args.method.task_index]])
-        control_normalized_accuracy = np.mean([coef_info[dataset + ":normalized_top1_zeroshot"] for dataset in args.eval_datasets if dataset != args.eval_datasets[args.method.task_index]])
-        coef_info["control_normalized_accuracy"] = control_normalized_accuracy
-        coef_info["target_normalized_accuracy"] = target_normalized_accuracy
-        print(f"task: {args.eval_datasets[args.method.task_index]}")
-        print(f"Target task accuracy: {target_accuracy:.4f}%")
-        print(f"Target task normalized accuracy: {target_normalized_accuracy:.4f}")
-        print(f"Control task accuracy: {control_accuracy:.4f}%")
-        print(f"Control task normalized accuracy: {control_normalized_accuracy:.4f}")
-
-        if not test:
-            wandb.log({"task": args.eval_datasets[args.method.task_index]})
-            wandb.log({f"target_acc_{scaling_coef:.1f}": target_accuracy})
-            wandb.log({f"target_norm_acc_{scaling_coef:.1f}": target_normalized_accuracy})
-            wandb.log({f"control_acc_{scaling_coef:.1f}": control_accuracy})
-            wandb.log({f"control_norm_acc_{scaling_coef:.1f}": control_normalized_accuracy})
-        else:
-            wandb.log({"task": args.eval_datasets[args.method.task_index]})
-            wandb.log({f"target_acc_test": target_accuracy})
-            wandb.log({f"target_norm_acc_test": target_normalized_accuracy})
-            wandb.log({f"control_acc_test": control_accuracy})
-            wandb.log({f"control_norm_acc_test": control_normalized_accuracy})
+        coef_info["target_accuracy"] = coef_info[args.eval_datasets[args.method.task_index] + ":top1"]
+        coef_info["control_accuracy"] = np.mean([coef_info[dataset + ":top1"] for dataset in args.eval_datasets if dataset != args.eval_datasets[args.method.task_index]])
+        coef_info["target_normalized_accuracy"] = coef_info[args.eval_datasets[args.method.task_index] + ":normalized_top1"]
+        coef_info["control_normalized_accuracy"] = np.mean([coef_info[dataset + ":normalized_top1_zeroshot"] for dataset in args.eval_datasets if dataset != args.eval_datasets[args.method.task_index]])
 
     print(f"Total evaluation time: {time.time() - start_time:.2f}s")
     return coef_info
@@ -165,6 +163,7 @@ def evaluate_task_vector(task_vector, pretrained_checkpoint, args, eval_masks=No
     if args.method.name == "tall_mask" or eval_masks is not None:
         scaling_coef_range = [1.0]
     elif args.method.name == "single_task":
+        print(f"Fine-tuned task: {args.eval_datasets[args.method.task_index]}")
         if args.method.apply_lines:
             scaling_coef_range = np.arange(0.0, 1.1, 0.1)[::-1]
         else:
@@ -176,11 +175,11 @@ def evaluate_task_vector(task_vector, pretrained_checkpoint, args, eval_masks=No
         scaling_coef_range = [1 / args.num_tasks]
     elif args.specify_lambda != "None":
         scaling_coef_range = [args.specify_lambda]
+    elif args.method.name == "ties":
+        scaling_coef_range = np.arange(0.1, 1.6, 0.1)
     else:
         scaling_coef_range = np.linspace(0.0, 1.0, args.n_eval_points // 2 + 1)[1:]
 
-    if args.method.name == "ties":
-        scaling_coef_range = np.arange(0.1, 1.6, 0.1)
 
     if args.method.name == "tall_mask":
         if args.method.load_mask:
@@ -215,13 +214,27 @@ def evaluate_task_vector(task_vector, pretrained_checkpoint, args, eval_masks=No
             info[scaling_coef] = evaluate_task_vector_at_coef(
                 task_vector, pretrained_checkpoint, args, scaling_coef, eval_masks
             )
-            print(
-                "\t avg_normalized_top1: {}%\t avg_top1: {}%".format(
-                    round(info[scaling_coef]["avg_normalized_top1"] * 100, 2),
-                    round(info[scaling_coef]["avg_top1"] * 100, 2), 
+            if args.method.name == "single_task":
+                print(f"Fine-tuned task: {args.eval_datasets[args.method.task_index]}")
+                print(
+                    "\t target_acc: {}%\t target_acc_norm: {}%".format(
+                        round(info[scaling_coef]["target_accuracy"] * 100, 2),
+                        round(info[scaling_coef]["target_normalized_accuracy"] * 100, 2), 
+                    )
                 )
-            )
-
+                print(
+                    "\t control_acc: {}%\t control_acc_norm: {}%".format(
+                        round(info[scaling_coef]["control_accuracy"] * 100, 2),
+                        round(info[scaling_coef]["control_normalized_accuracy"] * 100, 2), 
+                    )
+                )
+            else:
+                print(
+                    "\t avg_normalized_top1: {}%\t avg_top1: {}%".format(
+                        round(info[scaling_coef]["avg_normalized_top1"] * 100, 2),
+                        round(info[scaling_coef]["avg_top1"] * 100, 2), 
+                    )
+                )
     return info
 
 

@@ -50,11 +50,15 @@ def log_results(final_results, args):
     else:
         method_name = args.method.full_name
 
-    # save_file = f"results/merging/{args.model}_{args.num_tasks}tasks_{args.method.full_name}_nonlinear_additions_{mask_suffix}_prog_coeff_{args.prog_avg_coeff}.json"
-    if args.method.apply_lines:
-        save_file = f"results/merging/{args.model}_{args.num_tasks}tasks_{method_name}_nonlinear_additions_{mask_suffix}.json"
+    if args.method.name == "single_task":
+        method_dir = "editing"
     else:
-        save_file = f"results/merging/{args.model}_{args.num_tasks}tasks_{method_name}_nonlinear_additions_{mask_suffix}_ls.json"
+        method_dir = "merging"
+
+    if not args.method.apply_lines:
+        save_file = f"results/{method_dir}/{args.model}_{args.num_tasks}tasks_{method_name}_nonlinear_additions_{mask_suffix}.json"
+    else:
+        save_file = f"results/{method_dir}/{args.model}_{args.num_tasks}tasks_{method_name}_nonlinear_additions_{mask_suffix}_liness.json"
 
     with open(save_file, "w") as f:
         json.dump(final_results, f, indent=4)
