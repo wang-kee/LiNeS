@@ -18,12 +18,7 @@ n_eval_points: 21
 device: "cuda"
 batch_size: 128
 data_location: "/mnt/lts4/scratch/data"
-# data_location: "/mnt/lts4/scratch/home/kewang/data"
-
-# data_location: "/home/kewang/data/"
 model_location: "/mnt/lts4/scratch/checkpoints/tall_mask_checkpoints/mount/model_checkpoints"
-prog_avg_coeff: 0.5
-scaling_strategy: "linear"
 
 wandb:
   project: task-vectors

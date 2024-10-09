@@ -3,7 +3,6 @@ k: 100
 prun_thre_k: 2
 use_ties: false
 ties_agg: "sum"
-increasing_scaling: false
-progressive_scaling: false
+apply_lines: false
 
 full_name: ${method.name}_k=${method.k}

@@ -98,9 +98,6 @@ def create_task_vector(config: DictConfig) -> Tuple[torch.Tensor, Optional[Dict[
         # TIES Merging
         merge_func = f"dis-{config.method.agg}"
         merged_tv = ties_merging(tv_flat_checks, reset_thresh=config.method.k, merge_func=merge_func)
-
-        # torch.save(merged_tv, f"merged_tv_ties_{config.num_tasks}task.pt")
-        # torch.save(tv_flat_checks, f"tv_flat_checks_{config.num_tasks}task.pt")
     elif config.method.name in ["sum", "zeroshot", "average"]:
         # "sum" corresponds to Task Arithmetic (TA)
         # TA, zeroshot, weight average all construct the task vector with sum, but use different scaling factors.
@@ -109,7 +106,7 @@ def create_task_vector(config: DictConfig) -> Tuple[torch.Tensor, Optional[Dict[
     elif config.method.name == "single_task":
         # load the single task vector from task_index
         tv_flat_checks, _ = topk_values_mask(tv_flat_checks, K=config.method.k, return_mask=False)
-        merged_tv = tv_flat_checks[config.method.task_index]
+        merged_tv = tv_flat_checks[config.method.task_index] # take the single task vector of the task_index-th task
     elif config.method.name == "tall_mask":
         # construct multi-task vector
         if config.method.use_ties:
@@ -141,8 +138,6 @@ def create_task_vector(config: DictConfig) -> Tuple[torch.Tensor, Optional[Dict[
             )  # top-k mag filtering
             merged_tv = tv_flat_checks.sum(dim=0)
         # apply the consensus mask to filter multi-task vector
-        # torch.save(merged_tv, f"merged_tv_consensus_{config.num_tasks}task.pt")
-        # torch.save(consensus_masks, f"consensus_masks_{config.num_tasks}task.pt")
         merged_tv = merged_tv * consensus_mask
     elif config.method.name == "mag_masking":
         # Magnitude masking baseline
@@ -154,46 +149,19 @@ def create_task_vector(config: DictConfig) -> Tuple[torch.Tensor, Optional[Dict[
     else:
         raise ValueError(f"Method {config.method.name} not defined.")
 
-    # calculate the norm of the merged task vector
-
-    def calculate_norm(tv):
-        frozen_keys = ['model.positional_embedding', 'model.text_projection', 'model.logit_scale', 'model.token_embedding.weight', 'model.ln_final.weight', 'model.ln_final.bias']
-        dic = vector_to_state_dict(tv.flatten(), ptm_check, remove_keys=frozen_keys)
-        tv_removed = state_dict_to_vector(dic, remove_keys=frozen_keys)
-        return tv_removed.abs().sum()
-
     norm_mtv = (merged_tv).abs().sum()
-    norm_tvs_mean = (tv_flat_checks).abs().sum() / len(tv_flat_checks)
     norm_summed_tvs = (tv_flat_checks.sum(dim=0)).abs().sum()
 
-    print(f"-----------------") 
-    print(f"Norm of merged task vector: {norm_mtv}")
-    print(f"Norm of mean of task vectors: {norm_tvs_mean}")
-    print(f"Norm of sum of task vectors: {norm_summed_tvs}")
-    print(f"-----------------")
-
-    num_datasets = len(tv_flat_checks)
-    summed_mtv = tv_flat_checks.sum(dim=0)
-    starting_lambda_l1 = (((summed_mtv).abs().sum() / (merged_tv).abs().sum()) / num_datasets).item()
-    print(f"For l1 norm, starting lambda: {starting_lambda_l1}")
-    starting_lambda_l2 = (((summed_mtv).square().sum().sqrt() / (merged_tv).square().sum().sqrt()) / num_datasets).item()
-    print(f"For l2 norm, starting lambda: {starting_lambda_l2}")
-    starting_lambda_l2_square = (((summed_mtv).square().sum() / (merged_tv).square().sum()) / num_datasets).item()
-    print(f"For l2 norm square, starting lambda: {starting_lambda_l2_square}")
+    print(f"L1 Norm of merged task vector: {norm_mtv}")
+    print(f"L1 Norm of sum of task vectors: {norm_summed_tvs}")
 
     with open_dict(config):
         config.norm_mtv = norm_mtv.item()
-        config.norm_tvs_mean = norm_tvs_mean.item()
         config.norm_summed_tvs = norm_summed_tvs.item()
-
-        config.starting_lambda_l1 = starting_lambda_l1
-        config.starting_lambda_l2 = starting_lambda_l2
-        config.starting_lambda_l2_square = starting_lambda_l2_square
 
     merged_tv_state_dict = vector_to_state_dict(merged_tv, ptm_check, remove_keys=remove_keys)
 
     task_vector = NonLinearTaskVector(model_name=config.model, vector=merged_tv_state_dict)
-    print("Norm of task vector: ", task_vector.norm())
 
     if config.method.name not in ["tall_mask", "mag_masking"]:
         eval_masks = None

@@ -25,8 +25,8 @@ pretrained_checkpoint = get_zeroshot_path(args.model_location, "MNIST", args.mod
 for dataset in [
     # "MNIST",
     # "Cars",
-    "DTD",
-    # "EuroSAT",
+    # "DTD",
+    "EuroSAT",
     # "GTSRB",
     # "RESISC45",
     # "SUN397",

@@ -45,10 +45,8 @@ def perform_eval_with_merged_vector(args, task_vector, eval_masks=None):
         best_masks_for_test = eval_masks
         best_val_metrics = val_metrics[1.0]
     elif args.method.name == "single_task":
-        # find scaling factor alpha based on validation accuracy (for Task Arithmetic, TIES, Consensus Merging)
-        # optimal_coef = find_optimal_coef_id_ood(val_metrics, id_weight=10.0, minimize=False)
-        # optimal_coef = find_optimal_coef_id_ood(val_metrics, id_weight=5.0, minimize=False)
-        optimal_coef = find_optimal_coef_id_ood(val_metrics, id_weight=1.0, minimize=False)
+        # for single-task setting, find best hyper-parameter based on validation accuracy on both target and control tasks
+        optimal_coef = find_optimal_coef_id_ood(val_metrics, id_weight=2.0, minimize=False)
         best_val_metrics = val_metrics[optimal_coef]
     else:
         # find scaling factor alpha based on validation accuracy (for Task Arithmetic, TIES, Consensus Merging)

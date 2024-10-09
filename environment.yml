@@ -1,4 +1,4 @@
-name: tall-masks
+name: lines
 channels:
 - pytorch
 - nvidia

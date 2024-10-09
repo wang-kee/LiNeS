@@ -1,7 +1,6 @@
 name: ties
 k: 20
-increasing_scaling: false
-progressive_scaling: false
+apply_lines: false
 agg: mean
 
 full_name: ${method.name}_k=${method.k}

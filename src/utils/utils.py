@@ -181,12 +181,12 @@ def find_optimal_coef_id_ood(
         best_metric = 0
     for scaling_coef in results.keys():
         if minimize:
-            if (id_weight * results[scaling_coef]["id_normalized_accuracy"] + results[scaling_coef]["ood_normalized_accuracy"]) < best_metric:
-                best_metric = id_weight * results[scaling_coef]["id_normalized_accuracy"] + results[scaling_coef]["ood_normalized_accuracy"]
+            if (id_weight * results[scaling_coef]["target_normalized_accuracy"] + results[scaling_coef]["control_normalized_accuracy"]) < best_metric:
+                best_metric = id_weight * results[scaling_coef]["target_normalized_accuracy"] + results[scaling_coef]["control_normalized_accuracy"]
                 best_coef = scaling_coef
         else:
-            if (id_weight * results[scaling_coef]["id_normalized_accuracy"] + results[scaling_coef]["ood_normalized_accuracy"]) > best_metric:
-                best_metric = id_weight * results[scaling_coef]["id_normalized_accuracy"] + results[scaling_coef]["ood_normalized_accuracy"]
+            if (id_weight * results[scaling_coef]["target_normalized_accuracy"] + results[scaling_coef]["control_normalized_accuracy"]) > best_metric:
+                best_metric = id_weight * results[scaling_coef]["target_normalized_accuracy"] + results[scaling_coef]["control_normalized_accuracy"]
                 best_coef = scaling_coef
     return best_coef
 

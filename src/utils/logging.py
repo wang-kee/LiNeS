@@ -51,7 +51,7 @@ def log_results(final_results, args):
         method_name = args.method.full_name
 
     # save_file = f"results/merging/{args.model}_{args.num_tasks}tasks_{args.method.full_name}_nonlinear_additions_{mask_suffix}_prog_coeff_{args.prog_avg_coeff}.json"
-    if args.method.increasing_scaling:
+    if args.method.apply_lines:
         save_file = f"results/merging/{args.model}_{args.num_tasks}tasks_{method_name}_nonlinear_additions_{mask_suffix}.json"
     else:
         save_file = f"results/merging/{args.model}_{args.num_tasks}tasks_{method_name}_nonlinear_additions_{mask_suffix}_ls.json"

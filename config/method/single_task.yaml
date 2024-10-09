@@ -1,5 +1,6 @@
-name: sum
+name: single_task
 k: 100
 apply_lines: false
 
 full_name: ${method.name}_k=${method.k}
+task_index: 0
