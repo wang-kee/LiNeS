@@ -1,11 +1,13 @@
 # LiNeS
 
-This is a source code to reproduce the experiments for "[LiNeS: Post-training Layer Scaling Prevents Forgetting and Enhances Model Merging](https://arxiv.org/abs/todo)".
+This is a source code to reproduce the experiments for "[LiNeS: Post-training Layer Scaling Prevents Forgetting and Enhances Model Merging](https://arxiv.org/abs/todo)". 
 
 Our paper proposes a post-training model edition method to mitigate catastrophic forgetting, with applications for improving model merging methods.
 This repo contains the following experiments:
 1) applying LiNeS on the fine-tuned residual, improving fine-tuned model's performance on control tasks while preserving performance on the fine-tuned (target) task.
 2) applying LiNeS for enhancing multi-task merging, improves the performance over multiple baseline merging methods.
+
+This repo is heavily based on the repo for [TALL-Masks](https://github.com/nik-dim/tall_masks).
 
 <!-- ![](figures/illustration.png) -->
 
