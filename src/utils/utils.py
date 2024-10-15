@@ -167,9 +167,9 @@ def find_optimal_coef(
                 best_coef = scaling_coef
     return best_coef
 
-def find_optimal_coef_id_ood(
+def find_optimal_coef_tradeoff(
     results: Dict[str, Any],
-    id_weight: float = 5.0,
+    tradeoff_target_weight: float = 5.0,
     minimize: bool = False,
     control_metric: Optional[str] = None,
     control_metric_threshold: float = 0.0,
@@ -181,12 +181,12 @@ def find_optimal_coef_id_ood(
         best_metric = 0
     for scaling_coef in results.keys():
         if minimize:
-            if (id_weight * results[scaling_coef]["target_normalized_accuracy"] + results[scaling_coef]["control_normalized_accuracy"]) < best_metric:
-                best_metric = id_weight * results[scaling_coef]["target_normalized_accuracy"] + results[scaling_coef]["control_normalized_accuracy"]
+            if (tradeoff_target_weight * results[scaling_coef]["target_normalized_accuracy"] + results[scaling_coef]["control_normalized_accuracy"]) < best_metric:
+                best_metric = tradeoff_target_weight * results[scaling_coef]["target_normalized_accuracy"] + results[scaling_coef]["control_normalized_accuracy"]
                 best_coef = scaling_coef
         else:
-            if (id_weight * results[scaling_coef]["target_normalized_accuracy"] + results[scaling_coef]["control_normalized_accuracy"]) > best_metric:
-                best_metric = id_weight * results[scaling_coef]["target_normalized_accuracy"] + results[scaling_coef]["control_normalized_accuracy"]
+            if (tradeoff_target_weight * results[scaling_coef]["target_normalized_accuracy"] + results[scaling_coef]["control_normalized_accuracy"]) > best_metric:
+                best_metric = tradeoff_target_weight * results[scaling_coef]["target_normalized_accuracy"] + results[scaling_coef]["control_normalized_accuracy"]
                 best_coef = scaling_coef
     return best_coef
 

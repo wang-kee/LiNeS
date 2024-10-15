@@ -21,7 +21,7 @@ conda activate lines
 
 ## Checkpoints
 We use the checkpoints from [this link](https://drive.google.com/drive/folders/15ParSng4d5xSdaWdBFsg1617zPXT8Dae?usp=sharing), where you can download the checkpoints by running the following script:
-```sh
+```bash
 # model options --model {ViT-B-32,ViT-L-14} 
 # use python download_checkpoints.py --help for more information
 python download_checkpoints.py --model='ViT-B-32' --kind=checkpoints

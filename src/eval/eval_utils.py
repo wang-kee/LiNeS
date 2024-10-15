@@ -7,7 +7,7 @@ from omegaconf import open_dict
 
 from src.eval.eval import evaluate_task_vector, evaluate_task_vector_at_coef
 from src.utils.tallmask_utils import find_optimal_mask
-from src.utils.utils import find_optimal_coef, find_optimal_coef_id_ood
+from src.utils.utils import find_optimal_coef, find_optimal_coef_tradeoff
 from src.utils.logging import log_results
 from src.utils.variables_and_paths import get_finetuned_path, get_zeroshot_path, get_single_task_accuracies_path, get_zero_shot_accuracies_path
 
@@ -47,7 +47,7 @@ def perform_eval_with_merged_vector(args, task_vector, eval_masks=None):
     elif args.method.name == "single_task":
         # for single-task setting, find best hyper-parameter based on a trade-off accuracy on both target and control tasks
         # here id_weight is the weight for the target tasks in the trade-off
-        optimal_coef = find_optimal_coef_id_ood(val_metrics, id_weight=2.0, minimize=False)
+        optimal_coef = find_optimal_coef_tradeoff(val_metrics, tradeoff_target_weight=args.method.tradeoff_target_weight, minimize=False)
         best_val_metrics = val_metrics[optimal_coef]
     else:
         # find scaling factor alpha based on validation accuracy (for Task Arithmetic, TIES, Consensus Merging)
