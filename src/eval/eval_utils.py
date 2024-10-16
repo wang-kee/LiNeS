@@ -46,7 +46,7 @@ def perform_eval_with_merged_vector(args, task_vector, eval_masks=None):
         best_val_metrics = val_metrics[1.0]
     elif args.method.name == "single_task":
         # for single-task setting, find best hyper-parameter based on a trade-off accuracy on both target and control tasks
-        # here id_weight is the weight for the target tasks in the trade-off
+        # here tradeoff_target_weight is the weight for the target tasks in the trade-off
         optimal_coef = find_optimal_coef_tradeoff(val_metrics, tradeoff_target_weight=args.method.tradeoff_target_weight, minimize=False)
         best_val_metrics = val_metrics[optimal_coef]
     else:
@@ -72,11 +72,13 @@ def perform_eval_with_merged_vector(args, task_vector, eval_masks=None):
     print("=" * 100)
 
     if args.method.name == "single_task":
+        # for single task, report both target and control task accuracies
         print(f"Test target task accuracy: {test_metrics['target_accuracy']:.4f}")
         print(f"Test target task normalized accuracy: {test_metrics['target_normalized_accuracy']:.4f}")
         print(f"Test control task accuracy: {test_metrics['control_accuracy']:.4f}")
         print(f"Test control task normalized accuracy: {test_metrics['control_normalized_accuracy']:.4f}")
     else:
+        # for multi-task, report the average accuracy on all tasks
         print(f"Test normalized accuracy: {test_metrics['avg_normalized_top1']:.4f}")
         print(f"Test absolute accuracy: {test_metrics['avg_top1']:.4f}")
 

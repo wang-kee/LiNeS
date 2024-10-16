@@ -80,7 +80,7 @@ def LiNeS_scaling(task_vector, alpha, beta, num_blocks):
     
     print(f"LiNeS: The layers are scaled between {alpha} to {alpha + beta}")
     
-    # for the layers outside the residual blocks, we set them to 1/num_datasets
+    # apply scaling to the task vector
     scaled_task_vector.vector = {
         # scale with alpha for layers outside residual blocks
         k: scaled_task_vector.vector[k] * layer_scalings_dict.get(k, alpha)  
@@ -147,9 +147,11 @@ def evaluate_task_vector_at_coef(
     coef_info["avg_top1"] = np.mean([coef_info[dataset + ":top1"] for dataset in args.eval_datasets])
 
     if args.method.name == "single_task":
+        # log both target and control accuracies
         coef_info = add_normalized_accuracy(coef_info, args, based_on="zeroshot")
         coef_info["target_accuracy"] = coef_info[args.eval_datasets[args.method.task_index] + ":top1"]
         coef_info["control_accuracy"] = np.mean([coef_info[dataset + ":top1"] for dataset in args.eval_datasets if dataset != args.eval_datasets[args.method.task_index]])
+        # normalize target accuracy with finetuned accuracy; normalize control accuracy with zeroshot accuracy
         coef_info["target_normalized_accuracy"] = coef_info[args.eval_datasets[args.method.task_index] + ":normalized_top1"]
         coef_info["control_normalized_accuracy"] = np.mean([coef_info[dataset + ":normalized_top1_zeroshot"] for dataset in args.eval_datasets if dataset != args.eval_datasets[args.method.task_index]])
 
@@ -240,11 +242,13 @@ def evaluate_task_vector(task_vector, pretrained_checkpoint, args, eval_masks=No
 
 def add_normalized_accuracy(results, args, based_on="finetuned"):
     if based_on == "finetuned":
+        # normalize based on the finetuned accuracy (for target tasks)
         for dataset_name in args.eval_datasets:
             results[dataset_name + ":normalized_top1"] = (
                 results[dataset_name + ":top1"] / args.finetuning_accuracies[dataset_name]
             )
     elif based_on == "zeroshot":
+        # normalize based on the zeroshot accuracy (for control tasks)
         for dataset_name in args.eval_datasets:
             results[dataset_name + ":normalized_top1_zeroshot"] = (
                 results[dataset_name + ":top1"] / args.zeroshot_accuracies[dataset_name+':top1']
