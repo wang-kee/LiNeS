@@ -5,17 +5,16 @@ TQDM_BAR_FORMAT = "{l_bar}{bar:10}{r_bar}{bar:-10b}"
 MODELS = ["ViT-B-32", "ViT-B-16", "ViT-L-14"]
 OPENCLIP_CACHEDIR = Path(Path.home(), "openclip-cachedir", "open_clip").as_posix()
 CACHEDIR = None
-# ALL_DATASETS = [ "Cars", "DTD", "EuroSAT", "GTSRB", "RESISC45", "MNIST", "SUN397","SVHN"]
 
 ALL_DATASETS = [
-    "Cars",
-    "DTD",
-    "EuroSAT",
-    "GTSRB",
-    "MNIST",
-    "RESISC45",
+    "EuroSAT", 
+    "DTD", 
+    "SUN397", 
+    "MNIST", 
+    "RESISC45", 
+    "GTSRB", 
+    "Cars", 
     "SVHN",
-    "SUN397",
     "STL10",
     "OxfordIIITPet",
     "Flowers102",

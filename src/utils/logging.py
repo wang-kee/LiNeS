@@ -54,7 +54,7 @@ def log_results(final_results, args):
     method_dir = "editing_single_task" if args.method.name == "single_task" else "merging_multi_task"
 
     if args.method.name == "single_task":
-        save_file = f"results/{method_dir}/{args.model}_{args.num_tasks}tasks_{method_name}_finetuned_on_{method.task_id}task_{mask_suffix}{lines_suffix}.json"
+        save_file = f"results/{method_dir}/{args.model}_{args.num_tasks}tasks_{method_name}_finetuned_on_{args.method.task_id}task_{mask_suffix}{lines_suffix}.json"
     else:
         save_file = f"results/{method_dir}/{args.model}_{args.num_tasks}tasks_{method_name}_merged_{mask_suffix}{lines_suffix}.json"
 
