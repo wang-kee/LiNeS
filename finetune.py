@@ -9,7 +9,12 @@ from src.datasets import get_dataloader, get_dataset, maybe_dictionarize
 from src.eval.eval import eval_single_dataset
 from src.models import ImageClassifier, ImageEncoder, get_classification_head
 from src.utils import initialize_wandb, parse_arguments
-from src.utils.distributed import cleanup_ddp, distribute_loader, is_main_process, setup_ddp
+from src.utils.distributed import (
+    cleanup_ddp,
+    distribute_loader,
+    is_main_process,
+    setup_ddp,
+)
 from src.utils.utils import LabelSmoothing, cosine_lr
 from src.utils.variables_and_paths import get_finetuned_path, get_zeroshot_path
 
@@ -44,7 +49,12 @@ def finetune(rank, args):
     preprocess_fn = model.train_preprocess
     print_every = 100
 
-    dataset = get_dataset(train_dataset, preprocess_fn, location=args.data_location, batch_size=args.batch_size)
+    dataset = get_dataset(
+        train_dataset,
+        preprocess_fn,
+        location=args.data_location,
+        batch_size=args.batch_size,
+    )
     data_loader = get_dataloader(dataset, is_train=True, args=args, image_encoder=None)
     num_batches = len(dataset.train_loader)
 
@@ -64,7 +74,10 @@ def finetune(rank, args):
     params = [p for p in ddp_model.parameters() if p.requires_grad]
     optimizer = torch.optim.AdamW(params, lr=args.lr, weight_decay=args.wd)
     scheduler = cosine_lr(
-        optimizer, args.lr, args.warmup_length, args.epochs * num_batches // args.num_grad_accumulation
+        optimizer,
+        args.lr,
+        args.warmup_length,
+        args.epochs * num_batches // args.num_grad_accumulation,
     )
 
     # Saving zero-shot model

@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 
 from datasets import load_dataset
+from src.utils.variables_and_paths import DATA_DIR
 
 
 class CustomFER2013Dataset(Dataset):
@@ -29,16 +30,9 @@ class CustomFER2013Dataset(Dataset):
 
 
 class FER2013:
-    def __init__(
-        self,
-        preprocess,
-        location=os.path.expanduser("~/data"),
-        batch_size=128,
-        num_workers=16,
-    ):
+    def __init__(self, preprocess, location=DATA_DIR, batch_size=128, num_workers=16):
 
         # location = os.path.join("~/data", "FER2013")
-        location = "home/kewang/data"
 
         # Load the FER2013 dataset using Hugging Face datasets library
         fer2013 = load_dataset("Jeneral/fer-2013", split="train")

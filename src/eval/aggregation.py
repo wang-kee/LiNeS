@@ -6,7 +6,11 @@ from omegaconf import DictConfig
 from omegaconf import open_dict
 
 from src.models.task_vectors import ImageEncoder, NonLinearTaskVector
-from src.utils.tallmask_utils import construct_consensus_mask, construct_tall_mask, load_tall_mask
+from src.utils.tallmask_utils import (
+    construct_consensus_mask,
+    construct_tall_mask,
+    load_tall_mask,
+)
 from src.utils.ties_utils import ties_merging
 from src.utils.utils import (
     check_parameterNamesMatch,
@@ -18,7 +22,9 @@ from src.utils.utils import (
 from src.utils.variables_and_paths import get_finetuned_path, get_zeroshot_path
 
 
-def get_all_checkpoints(config: DictConfig) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
+def get_all_checkpoints(
+    config: DictConfig,
+) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
     """
     Retrieves all the checkpoints for the given configuration.
 
@@ -43,7 +49,11 @@ def get_all_checkpoints(config: DictConfig) -> Tuple[Dict[str, torch.Tensor], Di
             print(f"{path} does not exist")
 
     params = {
-        dataset: torch.load(get_finetuned_path(model_dir, dataset, model=config.model), map_location="cpu")
+        dataset: torch.load(
+            get_finetuned_path(model_dir, dataset, model=config.model),
+            map_location="cpu",
+            weights_only=True,
+        )
         for dataset in config.DATASETS_VAL
     }
 
@@ -51,7 +61,11 @@ def get_all_checkpoints(config: DictConfig) -> Tuple[Dict[str, torch.Tensor], Di
     params = list(params.values())
 
     try:
-        ptm_check = torch.load(get_zeroshot_path(model_dir, "MNISTVal", model=config.model), map_location="cpu")
+        ptm_check = torch.load(
+            get_zeroshot_path(model_dir, "MNISTVal", model=config.model),
+            map_location="cpu",
+            weights_only=True,
+        )
     except:
         ptm_check = ImageEncoder(config.model).state_dict()
         torch.save(ptm_check, get_zeroshot_path(model_dir, "MNISTVal", model=config.model))
@@ -59,7 +73,9 @@ def get_all_checkpoints(config: DictConfig) -> Tuple[Dict[str, torch.Tensor], Di
     return params, ptm_check
 
 
-def create_task_vector(config: DictConfig) -> Tuple[torch.Tensor, Optional[Dict[str, torch.Tensor]]]:
+def create_task_vector(
+    config: DictConfig,
+) -> Tuple[torch.Tensor, Optional[Dict[str, torch.Tensor]]]:
     """
     Creates a task vector based on the given configuration.
 
@@ -107,7 +123,7 @@ def create_task_vector(config: DictConfig) -> Tuple[torch.Tensor, Optional[Dict[
         # load the single task vector from task_index
         tv_flat_checks, _ = topk_values_mask(tv_flat_checks, K=config.method.k, return_mask=False)
         # take only the task vector of the task_index-th task
-        merged_tv = tv_flat_checks[config.method.task_index] 
+        merged_tv = tv_flat_checks[config.method.task_index]
     elif config.method.name == "tall_mask":
         # construct multi-task vector
         if config.method.use_ties:
@@ -125,7 +141,13 @@ def create_task_vector(config: DictConfig) -> Tuple[torch.Tensor, Optional[Dict[
             print(f"=== Constructing TALL Mask ===")
             # construct tall masks
             eval_masks = construct_tall_mask(
-                tv_flat_checks, flat_ft, flat_ptm, merged_tv, ptm_check, remove_keys, config
+                tv_flat_checks,
+                flat_ft,
+                flat_ptm,
+                merged_tv,
+                ptm_check,
+                remove_keys,
+                config,
             )
     elif config.method.name == "consensus":  # consensus merging
         # construct consensus mask (assuming the TALL masks have already been constructed)

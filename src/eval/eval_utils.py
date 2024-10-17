@@ -9,7 +9,12 @@ from src.eval.eval import evaluate_task_vector, evaluate_task_vector_at_coef
 from src.utils.tallmask_utils import find_optimal_mask
 from src.utils.utils import find_optimal_coef, find_optimal_coef_tradeoff
 from src.utils.logging import log_results
-from src.utils.variables_and_paths import get_finetuned_path, get_zeroshot_path, get_single_task_accuracies_path, get_zero_shot_accuracies_path
+from src.utils.variables_and_paths import (
+    get_finetuned_path,
+    get_zeroshot_path,
+    get_single_task_accuracies_path,
+    get_zero_shot_accuracies_path,
+)
 
 
 def perform_eval_with_merged_vector(args, task_vector, eval_masks=None):
@@ -27,7 +32,7 @@ def perform_eval_with_merged_vector(args, task_vector, eval_masks=None):
         with open(ft_accuracies_path) as f:
             args.finetuning_accuracies = json.load(f)
         with open(zs_accuracies_path) as f:
-            args.zeroshot_accuracies = json.load(f)['val_best']
+            args.zeroshot_accuracies = json.load(f)["val_best"]
         args.eval_datasets = args.DATASETS_VAL
         args.control_dataset = None
 
@@ -47,7 +52,11 @@ def perform_eval_with_merged_vector(args, task_vector, eval_masks=None):
     elif args.method.name == "single_task":
         # for single-task setting, find best hyper-parameter based on a trade-off accuracy on both target and control tasks
         # here tradeoff_target_weight is the weight for the target tasks in the trade-off
-        optimal_coef = find_optimal_coef_tradeoff(val_metrics, tradeoff_target_weight=args.method.tradeoff_target_weight, minimize=False)
+        optimal_coef = find_optimal_coef_tradeoff(
+            val_metrics,
+            tradeoff_target_weight=args.method.tradeoff_target_weight,
+            minimize=False,
+        )
         best_val_metrics = val_metrics[optimal_coef]
     else:
         # find scaling factor alpha based on validation accuracy (for Task Arithmetic, TIES, Consensus Merging)
@@ -62,11 +71,20 @@ def perform_eval_with_merged_vector(args, task_vector, eval_masks=None):
 
     if args.method.name in ["tall_mask", "mag_masking"]:
         test_metrics = evaluate_task_vector_at_coef(
-            task_vector, pretrained_checkpoint, args, 1.0, eval_masks=best_masks_for_test
+            task_vector,
+            pretrained_checkpoint,
+            args,
+            1.0,
+            eval_masks=best_masks_for_test,
         )
     else:
         test_metrics = evaluate_task_vector_at_coef(
-            task_vector, pretrained_checkpoint, args, float(optimal_coef), eval_masks=None, test=True
+            task_vector,
+            pretrained_checkpoint,
+            args,
+            float(optimal_coef),
+            eval_masks=None,
+            test=True,
         )
 
     print("=" * 100)
@@ -82,7 +100,11 @@ def perform_eval_with_merged_vector(args, task_vector, eval_masks=None):
         print(f"Test normalized accuracy: {test_metrics['avg_normalized_top1']:.4f}")
         print(f"Test absolute accuracy: {test_metrics['avg_top1']:.4f}")
 
-    final_results = {"test": test_metrics, "val": val_metrics, "val_best": best_val_metrics}
+    final_results = {
+        "test": test_metrics,
+        "val": val_metrics,
+        "val_best": best_val_metrics,
+    }
     log_results(final_results, args)
 
     return final_results

@@ -17,7 +17,14 @@ def initialize_wandb(args, disabled=True):
         wandb.init(config=args)
 
     if wandb.run is not None:
-        INVALID_PATHS = ["__old__", "checkpoints", "logs", "outputs", "results", "wandb"]
+        INVALID_PATHS = [
+            "__old__",
+            "checkpoints",
+            "logs",
+            "outputs",
+            "results",
+            "wandb",
+        ]
         wandb.run.log_code(
             exclude_fn=lambda path: any(
                 [path.startswith(os.path.expanduser(os.getcwd() + "/" + i)) for i in INVALID_PATHS]
@@ -29,6 +36,7 @@ def initialize_wandb(args, disabled=True):
 def wandb_log(dictionary: dict):
     if is_main_process():
         wandb.log(dictionary)
+
 
 def log_results(final_results, args):
     if args.method.name == "tall_mask":

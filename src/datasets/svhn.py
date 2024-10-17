@@ -3,15 +3,11 @@ import torch
 from torchvision.datasets import SVHN as PyTorchSVHN
 import numpy as np
 
+from src.utils.variables_and_paths import DATA_DIR
+
 
 class SVHN:
-    def __init__(
-        self,
-        preprocess,
-        location=os.path.expanduser("~/data"),
-        batch_size=128,
-        num_workers=16,
-    ):
+    def __init__(self, preprocess, location=DATA_DIR, batch_size=128, num_workers=16):
         # to fit with repo conventions for location
         modified_location = os.path.join(location, "svhn")
 

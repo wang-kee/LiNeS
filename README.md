@@ -45,14 +45,16 @@ Alternatively, you can run the following scripts:
 # Evaluate the zero-shot performance of the pre-trained model on the first 8 tasks
 python main.py model=ViT-B-32 num_tasks=8 method="zeroshot"
 
-# Evaluate the performance of fine-tuned model on the first 8 tasks; task_index=0 indicates fine-tuned on the 0-th task
+# Evaluate the performance of fine-tuned model on the first 8 tasks; 
+# task_index=0 indicates fine-tuned on the 0-th task
 python main.py model=ViT-B-32 num_tasks=8 method="single_task" method.task_index=0
 
-# Evaluate the performance of fine-tuned model (edited with LiNeS) on the first 8 tasks; task_index=0 indicates fine-tuned on the 0-th task
+# Evaluate the performance of fine-tuned model (edited with LiNeS) on the first 8 tasks; 
+# task_index=0 indicates fine-tuned on the 0-th task
 python main.py model=ViT-B-32 num_tasks=8 method="single_task" method.apply_lines=True method.task_index=0
 ```
 
-The target and control tasks accuracy are separately reported when evaluating the fine-tuned checkpoints. Note that you can set different values to `method.tradeoff_target_weight` (set by default to 2) to select varying importance to target accuracy (for the trade-off between target and control task accuracy) when selecting the best hyper-parameter for LiNeS for evaluation on test set.
+The target and control tasks accuracy are separately reported when evaluating the fine-tuned checkpoints. Note that you can set different vaxlues to `method.tradeoff_target_weight` (set by default to 2) to select varying importance to target accuracy (for the trade-off between target and control task accuracy) when selecting the best hyper-parameter for LiNeS for evaluation on test set.
 
 ### 2) Improving multi-task merging baselines
 

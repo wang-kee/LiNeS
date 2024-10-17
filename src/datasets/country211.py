@@ -2,17 +2,11 @@ import os
 
 import torch
 import torchvision.datasets as datasets
+from src.utils.variables_and_paths import DATA_DIR
 
 
 class Country211:
-    def __init__(
-        self,
-        preprocess,
-        location=os.path.expanduser("~/data"),
-        batch_size=128,
-        num_workers=16,
-    ):
-        location = "home/kewang/data"
+    def __init__(self, preprocess, location=DATA_DIR, batch_size=128, num_workers=16):
 
         location = os.path.join("~/data", "Country211")
         self.train_dataset = datasets.Country211(root=location, download=True, split="train", transform=preprocess)

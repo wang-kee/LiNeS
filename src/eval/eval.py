@@ -14,6 +14,7 @@ from src.utils import utils
 
 import wandb
 
+
 def eval_single_dataset(image_encoder, dataset_name, args):
     start_time = time.time()
     classification_head = get_classification_head(args, dataset_name)
@@ -21,7 +22,12 @@ def eval_single_dataset(image_encoder, dataset_name, args):
 
     model.eval()
 
-    dataset = get_dataset(dataset_name, model.val_preprocess, location=args.data_location, batch_size=args.batch_size)
+    dataset = get_dataset(
+        dataset_name,
+        model.val_preprocess,
+        location=args.data_location,
+        batch_size=args.batch_size,
+    )
     dataloader = get_dataloader(dataset, is_train=False, args=args, image_encoder=None)
     device = args.device
 
@@ -46,6 +52,7 @@ def eval_single_dataset(image_encoder, dataset_name, args):
 
     return metrics
 
+
 def LiNeS_scaling(task_vector, alpha, beta, num_blocks):
     """
     LiNeS: Progressively scales the task vector based on layer depth.
@@ -53,14 +60,14 @@ def LiNeS_scaling(task_vector, alpha, beta, num_blocks):
     Parameters:
     -----------
     task_vector : dict
-        A dictionary representing the residual between the fine-tuned checkpoint 
-        and the pre-trained checkpoint. 
+        A dictionary representing the residual between the fine-tuned checkpoint
+        and the pre-trained checkpoint.
     alpha : float
          The minimum scaling factor for the blocks.
     beta : float
         The maximum scaling coefficient difference between the last and first block.
     num_blocks : int
-        The total number of layer blocks in the model. 
+        The total number of layer blocks in the model.
     Returns:
     --------
     scaled_task_vector : dict
@@ -68,26 +75,27 @@ def LiNeS_scaling(task_vector, alpha, beta, num_blocks):
     """
 
     scaled_task_vector = copy.deepcopy(task_vector)
-    
+
     key_blocks = list(f".{i}." for i in range(0, num_blocks))
 
     layer_scalings_dict = {}
     for k in scaled_task_vector.vector.keys():
         for layer, block in enumerate(key_blocks):
             if block in k:
-                layer_scalings_dict[k] = alpha + beta * (layer / (num_blocks-1))
+                layer_scalings_dict[k] = alpha + beta * (layer / (num_blocks - 1))
                 break
-    
+
     print(f"LiNeS: The layers are scaled between {alpha} to {alpha + beta}")
-    
+
     # apply scaling to the task vector
     scaled_task_vector.vector = {
         # scale with alpha for layers outside residual blocks
-        k: scaled_task_vector.vector[k] * layer_scalings_dict.get(k, alpha)  
+        k: scaled_task_vector.vector[k] * layer_scalings_dict.get(k, alpha)
         for k in scaled_task_vector.vector.keys()
     }
 
     return scaled_task_vector
+
 
 def evaluate(pretrained_checkpoint, task_vector, args, scaling_coef, eval_masks=None, test=False):
     per_dataset_results = {}
@@ -98,13 +106,23 @@ def evaluate(pretrained_checkpoint, task_vector, args, scaling_coef, eval_masks=
     else:
         if args.method.apply_lines:
             # line scaling: this part is the key difference to task arithmetic and other merging methods
-            num_blocks = 12 if args.model != 'ViT-L-14' else 24
+            num_blocks = 12 if args.model != "ViT-L-14" else 24
             if args.method.name == "single_task":
-                task_vector = LiNeS_scaling(task_vector, alpha=scaling_coef, beta=1-scaling_coef, num_blocks=num_blocks)
+                task_vector = LiNeS_scaling(
+                    task_vector,
+                    alpha=scaling_coef,
+                    beta=1 - scaling_coef,
+                    num_blocks=num_blocks,
+                )
             else:
                 # for multi-task setting, we scale alpha based on the norm of the task vectors, as well as number of tasks
                 alpha = (args.norm_summed_tvs / args.norm_mtv) * 1 / args.num_tasks
-                task_vector = LiNeS_scaling(task_vector, alpha=alpha, beta=scaling_coef, num_blocks=num_blocks)
+                task_vector = LiNeS_scaling(
+                    task_vector,
+                    alpha=alpha,
+                    beta=scaling_coef,
+                    num_blocks=num_blocks,
+                )
             image_encoder = task_vector.apply_to(pretrained_checkpoint, scaling_coef=1.0)
         else:
             # constant scaling: baseline model merging methods
@@ -134,7 +152,7 @@ def evaluate_task_vector_at_coef(
     args,
     scaling_coef: float,
     eval_masks=None,
-    test=False
+    test=False,
 ):
     start_time = time.time()
 
@@ -150,10 +168,24 @@ def evaluate_task_vector_at_coef(
         # log both target and control accuracies
         coef_info = add_normalized_accuracy(coef_info, args, based_on="zeroshot")
         coef_info["target_accuracy"] = coef_info[args.eval_datasets[args.method.task_index] + ":top1"]
-        coef_info["control_accuracy"] = np.mean([coef_info[dataset + ":top1"] for dataset in args.eval_datasets if dataset != args.eval_datasets[args.method.task_index]])
+        coef_info["control_accuracy"] = np.mean(
+            [
+                coef_info[dataset + ":top1"]
+                for dataset in args.eval_datasets
+                if dataset != args.eval_datasets[args.method.task_index]
+            ]
+        )
         # normalize target accuracy with finetuned accuracy; normalize control accuracy with zeroshot accuracy
-        coef_info["target_normalized_accuracy"] = coef_info[args.eval_datasets[args.method.task_index] + ":normalized_top1"]
-        coef_info["control_normalized_accuracy"] = np.mean([coef_info[dataset + ":normalized_top1_zeroshot"] for dataset in args.eval_datasets if dataset != args.eval_datasets[args.method.task_index]])
+        coef_info["target_normalized_accuracy"] = coef_info[
+            args.eval_datasets[args.method.task_index] + ":normalized_top1"
+        ]
+        coef_info["control_normalized_accuracy"] = np.mean(
+            [
+                coef_info[dataset + ":normalized_top1_zeroshot"]
+                for dataset in args.eval_datasets
+                if dataset != args.eval_datasets[args.method.task_index]
+            ]
+        )
 
     print(f"Total evaluation time: {time.time() - start_time:.2f}s")
     return coef_info
@@ -182,12 +214,15 @@ def evaluate_task_vector(task_vector, pretrained_checkpoint, args, eval_masks=No
     else:
         scaling_coef_range = np.linspace(0.0, 1.0, args.n_eval_points // 2 + 1)[1:]
 
-
     if args.method.name == "tall_mask":
         if args.method.load_mask:
             print("=" * 43, f"Evaluating the loaded TALL masks", "=" * 43)
             info["loaded_mask"] = evaluate_task_vector_at_coef(
-                task_vector, pretrained_checkpoint, args, 1.0, eval_masks,
+                task_vector,
+                pretrained_checkpoint,
+                args,
+                1.0,
+                eval_masks,
             )
             print(
                 "\t avg_normalized_top1: {}%\t avg_top1: {}%".format(
@@ -200,7 +235,11 @@ def evaluate_task_vector(task_vector, pretrained_checkpoint, args, eval_masks=No
                 print("\n" * 2)
                 print("=" * 43, f"tall_mask_lambda = {tall_mask_lambda:.2f}", "=" * 43)
                 info[tall_mask_lambda] = evaluate_task_vector_at_coef(
-                    task_vector, pretrained_checkpoint, args, 1.0, eval_masks[tall_mask_lambda],
+                    task_vector,
+                    pretrained_checkpoint,
+                    args,
+                    1.0,
+                    eval_masks[tall_mask_lambda],
                 )
                 print(
                     "\t avg_normalized_top1: {}%\t avg_top1: {}%".format(
@@ -221,20 +260,20 @@ def evaluate_task_vector(task_vector, pretrained_checkpoint, args, eval_masks=No
                 print(
                     "\t target_acc: {}%\t target_acc_norm: {}%".format(
                         round(info[scaling_coef]["target_accuracy"] * 100, 2),
-                        round(info[scaling_coef]["target_normalized_accuracy"] * 100, 2), 
+                        round(info[scaling_coef]["target_normalized_accuracy"] * 100, 2),
                     )
                 )
                 print(
                     "\t control_acc: {}%\t control_acc_norm: {}%".format(
                         round(info[scaling_coef]["control_accuracy"] * 100, 2),
-                        round(info[scaling_coef]["control_normalized_accuracy"] * 100, 2), 
+                        round(info[scaling_coef]["control_normalized_accuracy"] * 100, 2),
                     )
                 )
             else:
                 print(
                     "\t avg_normalized_top1: {}%\t avg_top1: {}%".format(
                         round(info[scaling_coef]["avg_normalized_top1"] * 100, 2),
-                        round(info[scaling_coef]["avg_top1"] * 100, 2), 
+                        round(info[scaling_coef]["avg_top1"] * 100, 2),
                     )
                 )
     return info
@@ -251,6 +290,6 @@ def add_normalized_accuracy(results, args, based_on="finetuned"):
         # normalize based on the zeroshot accuracy (for control tasks)
         for dataset_name in args.eval_datasets:
             results[dataset_name + ":normalized_top1_zeroshot"] = (
-                results[dataset_name + ":top1"] / args.zeroshot_accuracies[dataset_name+':top1']
+                results[dataset_name + ":top1"] / args.zeroshot_accuracies[dataset_name + ":top1"]
             )
     return results

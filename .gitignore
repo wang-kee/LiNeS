@@ -164,3 +164,4 @@ wandb
 logs
 checkpoints
 tall_masks
+*.pt

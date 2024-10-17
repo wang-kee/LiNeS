@@ -2,18 +2,12 @@ import os
 
 import torch
 import torchvision.datasets as datasets
+from src.utils.variables_and_paths import DATA_DIR
 
 
 class PCAM:
-    def __init__(
-        self,
-        preprocess,
-        location=os.path.expanduser("~/data"),
-        batch_size=128,
-        num_workers=16,
-    ):
-        # location = "home/kewang/data"
-        # location = os.path.join("~/data", "PCAM")
+    def __init__(self, preprocess, location=DATA_DIR, batch_size=128, num_workers=16):
+        #         # location = os.path.join("~/data", "PCAM")
         location = os.path.join(location, "PCAM")
         self.train_dataset = datasets.PCAM(root=location, download=True, split="train", transform=preprocess)
 

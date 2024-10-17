@@ -5,8 +5,13 @@ from typing import Any, Callable, Optional, Tuple
 import torch
 import torchvision.datasets as datasets
 from PIL import Image
-from torchvision.datasets.utils import download_and_extract_archive, download_url, verify_str_arg
+from torchvision.datasets.utils import (
+    download_and_extract_archive,
+    download_url,
+    verify_str_arg,
+)
 from torchvision.datasets.vision import VisionDataset
+from src.utils.variables_and_paths import DATA_DIR
 
 
 class PytorchStanfordCars(VisionDataset):
@@ -124,13 +129,7 @@ class PytorchStanfordCars(VisionDataset):
 
 
 class Cars:
-    def __init__(
-        self,
-        preprocess,
-        location=os.path.expanduser("~/data"),
-        batch_size=32,
-        num_workers=16,
-    ):
+    def __init__(self, preprocess, location=DATA_DIR, batch_size=32, num_workers=16):
         # Data loading code
 
         self.train_dataset = PytorchStanfordCars(location, "train", preprocess, download=True)

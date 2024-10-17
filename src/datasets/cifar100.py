@@ -1,17 +1,11 @@
 import os
 import torch
 from torchvision.datasets import CIFAR100 as PyTorchCIFAR100
+from src.utils.variables_and_paths import DATA_DIR
 
 
 class CIFAR100:
-    def __init__(
-        self,
-        preprocess,
-        location=os.path.expanduser("~/data"),
-        batch_size=128,
-        num_workers=16,
-    ):
-        location = "home/kewang/data"
+    def __init__(self, preprocess, location=DATA_DIR, batch_size=128, num_workers=16):
 
         self.train_dataset = PyTorchCIFAR100(root=location, download=True, train=True, transform=preprocess)
 

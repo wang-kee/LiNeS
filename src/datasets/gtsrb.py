@@ -9,6 +9,7 @@ import torch
 from torchvision.datasets.folder import make_dataset
 from torchvision.datasets.utils import download_and_extract_archive, verify_str_arg
 from torchvision.datasets.vision import VisionDataset
+from src.utils.variables_and_paths import DATA_DIR
 
 
 def find_classes(directory: str) -> Tuple[List[str], Dict[str, int]]:
@@ -126,15 +127,8 @@ class PyTorchGTSRB(VisionDataset):
 
 
 class GTSRB:
-    def __init__(
-        self,
-        preprocess,
-        location=os.path.expanduser("~/data"),
-        batch_size=128,
-        num_workers=16,
-    ):
-
-        location = "/mnt/lts4/scratch/home/kewang/data/gtsrb"
+    def __init__(self, preprocess, location=DATA_DIR, batch_size=128, num_workers=16):
+        location = os.path.join(location, "gtsrb")
 
         # to fit with repo conventions for location
         self.train_dataset = PyTorchGTSRB(root=location, download=True, split="train", transform=preprocess)

@@ -23,14 +23,14 @@ pretrained_checkpoint = get_zeroshot_path(args.model_location, "MNIST", args.mod
 
 # evaluate each task sequentially
 for dataset in [
-    # "MNIST",
-    # "Cars",
-    # "DTD",
+    "MNIST",
+    "Cars",
+    "DTD",
     "EuroSAT",
-    # "GTSRB",
-    # "RESISC45",
-    # "SUN397",
-    # "SVHN",
+    "GTSRB",
+    "RESISC45",
+    "SUN397",
+    "SVHN",
     # "PCAM",
     # "CIFAR100",
     # "STL10",
@@ -52,14 +52,14 @@ for dataset in [
     # load finetuned checkpoint
     finetuned_checkpoint = get_finetuned_path(args.model_location, dataset, args.model)
     task_vector = NonLinearTaskVector(args.model, pretrained_checkpoint, finetuned_checkpoint)
-    
+
     if args.finetuning_mode == "none":
         image_encoder = task_vector.apply_to(pretrained_checkpoint, scaling_coef=0.0)
         save_file = f"single_task_zeroshot_accuracies.json"
     elif args.finetuning_mode == "standard":
         image_encoder = task_vector.apply_to(pretrained_checkpoint, scaling_coef=1.0)
         save_file = f"single_task_nonlinear_ft_accuracies.json"
-    
+
     for split in ["val", "test"]:
         print("=" * 100)
         print(f"Evaluating on {split} split.")
@@ -75,7 +75,7 @@ if not os.path.exists(directory):
     os.makedirs(directory)
 save_path = os.path.join(directory, save_file)
 with open(save_path, "a+") as f:
-    f.write(json.dumps(accuracies, sort_keys=False, indent=4) + '\n')
+    f.write(json.dumps(accuracies, sort_keys=False, indent=4) + "\n")
 
 pprint(accuracies, width=1)
 print("File saved at: ", save_path)

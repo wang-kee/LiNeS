@@ -3,6 +3,7 @@ import torch
 
 from .common import ImageFolderWithPaths, SubsetSampler
 import numpy as np
+from src.utils.variables_and_paths import DATA_DIR
 
 
 imagenet_classnames = [
@@ -1013,7 +1014,7 @@ class ImageNet:
     def __init__(
         self,
         preprocess,
-        location=os.path.expanduser("~/data"),
+        location=DATA_DIR,
         batch_size=32,
         num_workers=32,
     ):

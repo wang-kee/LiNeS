@@ -96,7 +96,11 @@ def construct_tall_mask(
     for tall_mask_lambda in [0.2, 0.3, 0.4, 0.5, 0.6]:
         # generate tall masks for each lambda
         masks_at_scale = generate_task_masks(
-            tv_flat_checks, flat_ft, flat_ptm, tall_mask_lambda=tall_mask_lambda, tv=merged_tv
+            tv_flat_checks,
+            flat_ft,
+            flat_ptm,
+            tall_mask_lambda=tall_mask_lambda,
+            tv=merged_tv,
         )
         # convert vectors to dictionary
         masks_at_scale = [vector_to_state_dict(mask, ptm_check, remove_keys=remove_keys) for mask in masks_at_scale]
@@ -154,7 +158,10 @@ def find_optimal_mask(val_metrics, eval_masks, args, save_masks=True):
             if not args.method.use_ties
             else f"TALL_mask_{args.num_tasks}task_use_ties_{args.method.ties_agg}.npy"
         )
-        np.save(os.path.join(mask_save_dir, args.model, mask_name), best_masks_for_test_vector)
+        np.save(
+            os.path.join(mask_save_dir, args.model, mask_name),
+            best_masks_for_test_vector,
+        )
         del best_masks_for_test_vector
 
     return best_masks_for_test, best_val_metrics
@@ -173,11 +180,14 @@ def load_tall_mask(remove_keys, ptm_check, config):
                     config.model,
                     f"TALL_mask_{config.num_tasks}task_use_ties.npy",
                 ),
-                allow_pickle=True
+                allow_pickle=True,
             ).item()
         else:
             print("==== Loading TALL Masks built with Task Arithmetic ====")
-            tall_masks = np.load(os.path.join(mask_location, config.model, f"TALL_mask_{config.num_tasks}task.npy"), allow_pickle=True).item()
+            tall_masks = np.load(
+                os.path.join(mask_location, config.model, f"TALL_mask_{config.num_tasks}task.npy"),
+                allow_pickle=True,
+            ).item()
             # tall_masks = torch.load(os.path.join(mask_location, config.model, f"TALL_mask_{config.num_tasks}task.npy"))
     except:
         raise Exception("TALL Masks are not constructed yet.")

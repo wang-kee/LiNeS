@@ -14,7 +14,11 @@ from src.utils.variables_and_paths import TQDM_BAR_FORMAT
 
 
 def build_classification_head(
-    model: nn.Module, dataset_name: str, template: List[Callable[[str], str]], data_location: str, device: torch.device
+    model: nn.Module,
+    dataset_name: str,
+    template: List[Callable[[str], str]],
+    data_location: str,
+    device: torch.device,
 ) -> ClassificationHead:
     """
     Builds a classification head for a given model and dataset.

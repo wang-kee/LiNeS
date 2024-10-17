@@ -82,7 +82,7 @@ def torch_save(model, save_path, save_state_dict=True):
 
 
 def torch_load(save_path, device=None):
-    model = torch.load(save_path, map_location="cpu")
+    model = torch.load(save_path, map_location="cpu", weights_only=False)
     if device is not None:
         model = model.to(device)
     return model
@@ -167,6 +167,7 @@ def find_optimal_coef(
                 best_coef = scaling_coef
     return best_coef
 
+
 def find_optimal_coef_tradeoff(
     results: Dict[str, Any],
     tradeoff_target_weight: float = 5.0,
@@ -181,14 +182,27 @@ def find_optimal_coef_tradeoff(
         best_metric = 0
     for scaling_coef in results.keys():
         if minimize:
-            if (tradeoff_target_weight * results[scaling_coef]["target_normalized_accuracy"] + results[scaling_coef]["control_normalized_accuracy"]) < best_metric:
-                best_metric = tradeoff_target_weight * results[scaling_coef]["target_normalized_accuracy"] + results[scaling_coef]["control_normalized_accuracy"]
+            if (
+                tradeoff_target_weight * results[scaling_coef]["target_normalized_accuracy"]
+                + results[scaling_coef]["control_normalized_accuracy"]
+            ) < best_metric:
+                best_metric = (
+                    tradeoff_target_weight * results[scaling_coef]["target_normalized_accuracy"]
+                    + results[scaling_coef]["control_normalized_accuracy"]
+                )
                 best_coef = scaling_coef
         else:
-            if (tradeoff_target_weight * results[scaling_coef]["target_normalized_accuracy"] + results[scaling_coef]["control_normalized_accuracy"]) > best_metric:
-                best_metric = tradeoff_target_weight * results[scaling_coef]["target_normalized_accuracy"] + results[scaling_coef]["control_normalized_accuracy"]
+            if (
+                tradeoff_target_weight * results[scaling_coef]["target_normalized_accuracy"]
+                + results[scaling_coef]["control_normalized_accuracy"]
+            ) > best_metric:
+                best_metric = (
+                    tradeoff_target_weight * results[scaling_coef]["target_normalized_accuracy"]
+                    + results[scaling_coef]["control_normalized_accuracy"]
+                )
                 best_coef = scaling_coef
     return best_coef
+
 
 def nonlinear_advantage(nonlinear_acc, linear_acc, num_classes):
     """Computes the normalized non-linear advantage of a finetuned model.

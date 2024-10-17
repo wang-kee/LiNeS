@@ -6,6 +6,7 @@ import torchvision
 from torchvision import transforms
 from torchvision.datasets import CIFAR10 as PyTorchCIFAR10
 from torchvision.datasets import VisionDataset
+from src.utils.variables_and_paths import DATA_DIR
 
 cifar_classnames = [
     "airplane",
@@ -22,14 +23,7 @@ cifar_classnames = [
 
 
 class CIFAR10:
-    def __init__(
-        self,
-        preprocess,
-        location=os.path.expanduser("~/data"),
-        batch_size=128,
-        num_workers=16,
-    ):
-        location = "home/kewang/data"
+    def __init__(self, preprocess, location=DATA_DIR, batch_size=128, num_workers=16):
 
         self.train_dataset = PyTorchCIFAR10(root=location, download=True, train=True, transform=preprocess)
 

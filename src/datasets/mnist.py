@@ -1,17 +1,11 @@
 import os
 import torch
 import torchvision.datasets as datasets
+from src.utils.variables_and_paths import DATA_DIR
 
 
 class MNIST:
-    def __init__(
-        self,
-        preprocess,
-        location=os.path.expanduser("~/data"),
-        batch_size=128,
-        num_workers=16,
-    ):
-        location = "home/kewang/data"
+    def __init__(self, preprocess, location=DATA_DIR, batch_size=128, num_workers=16):
         self.train_dataset = datasets.MNIST(root=location, download=True, train=True, transform=preprocess)
 
         self.train_loader = torch.utils.data.DataLoader(

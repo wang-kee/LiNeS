@@ -11,6 +11,7 @@ from torch import Tensor
 from torch.utils.data import Dataset
 from torchvision.datasets import ImageFolder
 from torchvision.datasets.folder import default_loader as pil_loader
+from src.utils.variables_and_paths import DATA_DIR
 
 
 # modified from: https://github.com/microsoft/torchgeo
@@ -277,13 +278,7 @@ class RESISC45Dataset(VisionClassificationDataset):
 
 
 class RESISC45:
-    def __init__(
-        self,
-        preprocess,
-        location=os.path.expanduser("~/data"),
-        batch_size=32,
-        num_workers=16,
-    ):
+    def __init__(self, preprocess, location=DATA_DIR, batch_size=32, num_workers=16):
 
         self.train_dataset = RESISC45Dataset(root=location, split="train", transforms=preprocess)
         self.train_loader = torch.utils.data.DataLoader(

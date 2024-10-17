@@ -2,6 +2,7 @@ import os
 import torch
 import torchvision.datasets as datasets
 import re
+from src.utils.variables_and_paths import DATA_DIR
 
 
 def pretify_classname(classname):
@@ -14,14 +15,7 @@ def pretify_classname(classname):
 
 
 class EuroSATBase:
-    def __init__(
-        self,
-        preprocess,
-        test_split,
-        location="~/datasets",
-        batch_size=32,
-        num_workers=16,
-    ):
+    def __init__(self, preprocess, test_split, location=DATA_DIR, batch_size=32, num_workers=16):
         # Data loading code
         traindir = os.path.join(location, "EuroSAT_splits", "train")
         testdir = os.path.join(location, "EuroSAT_splits", test_split)
