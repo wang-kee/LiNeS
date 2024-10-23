@@ -1,6 +1,6 @@
 # LiNeS
 
-This is a source code to reproduce the experiments for "[LiNeS: Post-training Layer Scaling Prevents Forgetting and Enhances Model Merging](https://arxiv.org/abs/todo)" by Ke Wang*, Nikolaos Dimitriadis*, Alessandro Favero, Guillermo Ortiz-Jimenez, Francois Fleuret, and Pascal Frossard. 
+This is a source code to reproduce the experiments for "[LiNeS: Post-training Layer Scaling Prevents Forgetting and Enhances Model Merging](https://arxiv.org/abs/2410.17146)" by Ke Wang*, Nikolaos Dimitriadis*, Alessandro Favero, Guillermo Ortiz-Jimenez, Francois Fleuret, and Pascal Frossard. 
 
 Our paper proposes a post-training model editing method to mitigate catastrophic forgetting, with applications for improving model merging methods.
 This repo contains the following experiments:
@@ -84,7 +84,7 @@ python main.py model=ViT-B-32 num_tasks=8 method="consensus" method.prun_thre_k=
 Notes:
 * Enhancing with LiNeS maintains the same hyper-parameter tuning costs compared to baseline methods.
 * You can select model in [ViT-B-32, ViT-L-14] and num_tasks in [8, 14, 20] to test different settings in the paper.
-* For consensus merging, you need to construct TALL-masks in advance, details are in [this link](https://github.com/nik-dim/tall_masks).
+* For consensus merging, you need to construct TALL-masks in advance, details in [this link](https://github.com/nik-dim/tall_masks).
 
 
 ## Other usage:
@@ -104,10 +104,17 @@ python eval_single_task.py --model=ViT-B-32 --finetuning-mode=standard
 ## Reference
 If you find this code useful, please cite the following paper:
 ```bibtex
-@article{,
-  title={LiNeS: Post-training Layer Scaling Prevents Forgetting and Enhances Model Merging},
-  author={},
-  journal={},
-  year={2024}
+@article{wang2024lines,
+author = {
+    Ke Wang,
+    Nikolaos Dimitriadis,
+    Alessandro Favero,
+    Guillermo Ortiz-Jimenez,
+    Fran\c{c}ois Fleuret,
+    Pascal Frossard},
+journal = {arXiv},
+title = {{LiNeS: Post-training Layer Scaling Prevents Forgetting and Enhances Model Merging}},
+year = {2024}
 }
+
 ```
