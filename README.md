@@ -20,17 +20,8 @@ conda activate lines
 ```
 
 ## Checkpoints
-We use the checkpoints from [this link](https://drive.google.com/drive/folders/15ParSng4d5xSdaWdBFsg1617zPXT8Dae?usp=sharing), where you can download the checkpoints by running the following script:
-```bash
-# model options --model {ViT-B-32,ViT-L-14} 
-# use python download_checkpoints.py --help for more information
-python download_checkpoints.py --model='ViT-B-32' --kind=checkpoints
-```
 
-The script downloads *all* the checkpoints for one model corresponding to 40 files. If you encounter any issues, please refer to the [gdown documentation](https://github.com/wkentaro/gdown?tab=readme-ov-file#faq). A common issue is that the download quota is exceeded, in which case you can download the files manually from the [Google Drive folder](https://drive.google.com/drive/folders/15ParSng4d5xSdaWdBFsg1617zPXT8Dae?usp=sharing) or modify your local cookies file as described in the gdown documentation.
-
-
-Alternatively, the checkpoints can be downloaded from the HuggingFace repo [`nik-dim/tall_masks`](https://huggingface.co/nik-dim/tall_masks). See the [`snapshot_download documentation`](https://huggingface.co/docs/huggingface_hub/v0.26.0/en/package_reference/file_download#huggingface_hub.snapshot_download) for more details.
+The checkpoints can be downloaded from the HuggingFace repo [`nik-dim/tall_masks`](https://huggingface.co/nik-dim/tall_masks). See the [`snapshot_download documentation`](https://huggingface.co/docs/huggingface_hub/v0.26.0/en/package_reference/file_download#huggingface_hub.snapshot_download) for more details.
 
 ```sh
 from huggingface_hub import snapshot_download
