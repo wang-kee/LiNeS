@@ -3,6 +3,8 @@ import os
 
 import gdown
 
+# note: this downloading procedure will be removed, please use the downloading procedure (from huggingface) provided in readme instead.
+
 URLS = {
     "checkpoints": {
         "ViT-B-32": "16xmoeMqNf1JlICqjMUEgHiH6mHn0G1f0",
