@@ -47,7 +47,7 @@ Evaluation is performed with Hydra, please modify `model_location` and `data_loc
 
 ### 1) Editing the fine-tuned checkpoint
 
-We provide in `LiNeS_example.ipynb` an example for applying LiNeS to edit the fine-tuned checkpoint, such that it reduces the performance loss on the control datasets while preserving fine-tuned accuracy.
+We provide in [LiNeS_example.ipynb](https://github.com/wang-kee/LiNeS/blob/master/LiNeS_example.ipynb) an example for applying LiNeS to edit the fine-tuned checkpoint, such that it reduces the performance loss on the control datasets while preserving fine-tuned accuracy.
 
 Alternatively, you can run the following scripts:
 
